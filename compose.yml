@@ -1,0 +1,32 @@
+services:
+  bot:
+    image: haxxy25-bot
+    build:
+      context: docker
+      target: discordbot
+    
+  backend:
+    image: haxxy25-backend
+    build:
+      context: docker
+      target: backend
+    ports:
+      - 4646:4646  # TODO env var
+    
+  website:
+    image: haxxy25-website
+    build:
+      context: docker
+      target: website
+    ports:
+      - 8080:8080
+    
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+      - 443:443
+
+  db:
+    image: postgres:latest
+    
