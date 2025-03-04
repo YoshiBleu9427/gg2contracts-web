@@ -5,10 +5,17 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "fastapi>=0.115.11",
+    "jinja2>=3.1.5",
     "pydantic>=2.10.6",
+    "sqlmodel>=0.0.23",
+    "uvicorn[standard]>=0.34.0",
 ]
 
 [dependency-groups]
 dev = [
     "ruff>=0.9.8",
 ]
+
+[tool.ruff.lint]
+extend-select = ["I"]

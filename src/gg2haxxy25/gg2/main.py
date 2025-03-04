@@ -1,4 +1,4 @@
-from gg2haxxy25.backend.tcpserver import setup_server
+from gg2.tcpserver import setup_server
 
 
 def main():

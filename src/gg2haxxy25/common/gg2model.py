@@ -1,8 +1,7 @@
-from pydantic import BaseModel
 from typing import Self
 
 
-class AppBaseModel(BaseModel):
+class GG2Model:
     def to_bytes(self) -> bytes:
         raise NotImplementedError
 

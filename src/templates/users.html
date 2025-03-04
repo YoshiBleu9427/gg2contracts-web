@@ -1,0 +1,14 @@
+<html>
+    <head>
+        <title>Yay</title>
+        <link rel="stylesheet" href="/static/css/style.css" />
+    </head>
+    <body>
+        <h1>All users!</h1>
+        <ul>
+            {% for user in users %}
+            <li><b>{{ user.username }}</b>: {{ user.main_class }}</li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>

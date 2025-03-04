@@ -1,4 +1,4 @@
-from socketserver import TCPServer, StreamRequestHandler
+from socketserver import StreamRequestHandler, TCPServer
 
 
 class Handler(StreamRequestHandler):
