@@ -1,1 +1,2 @@
-print("TODO")
+def main():
+    print("TODO")

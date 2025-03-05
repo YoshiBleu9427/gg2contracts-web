@@ -14,5 +14,9 @@ class User(SQLModel, table=True):
         nullable=False,
     )
     username: str
+    game_token: UUID = Field(
+        default_factory=uuid4,
+        index=True,
+    )
     main_class: GameClass
     contracts: list[Contract] = Relationship(back_populates="user")

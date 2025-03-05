@@ -1,15 +1,26 @@
-from socketserver import StreamRequestHandler, TCPServer
+from io import BytesIO
+from socket import socket
+from socketserver import StreamRequestHandler, ThreadingTCPServer
+
+from gg2haxxy25.gg2.messagehandler import MessageHandler
+
+MAX_BUF_SIZE = 64 * 1024
 
 
 class Handler(StreamRequestHandler):
     def handle(self):
-        self.data: bytes = self.request.recv(1024).strip()
-        print("From {}".format(self.client_address[0]))
-        print(self.data)
+        self.request: socket
 
-        self.request.sendall(self.data.upper())
+        handler = MessageHandler()
+
+        while handler.expecting_data:
+            data = self.request.recv(MAX_BUF_SIZE)
+            response = handler.handle_data(BytesIO(data))
+            self.request.sendall(response)
+
+        self.request.close()
 
 
-def setup_server(host: str, port: int) -> TCPServer:
-    server = TCPServer((host, port), Handler)
+def setup_server(host: str, port: int) -> ThreadingTCPServer:
+    server = ThreadingTCPServer((host, port), Handler)
     return server

@@ -1,23 +1,23 @@
+x-common: &common
+  image: haxxy25-bot
+  build:
+    context: docker
+
 services:
   bot:
-    image: haxxy25-bot
-    build:
-      context: docker
-      target: discordbot
+    <<: *common
+    command: 
+     - "run_discord_bot.py"
     
   backend:
-    image: haxxy25-backend
-    build:
-      context: docker
-      target: backend
+    <<: *common
     ports:
       - 4646:4646  # TODO env var
+    command: 
+     - "run_gg2_backend.py"
     
   website:
-    image: haxxy25-website
-    build:
-      context: docker
-      target: website
+    <<: *common
     ports:
       - 8080:8080
     
