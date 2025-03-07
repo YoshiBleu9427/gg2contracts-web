@@ -1,0 +1,74 @@
+from typing import Self
+from uuid import UUID
+
+from pydantic import BaseModel
+
+from gg2haxxy25.common.enums import ContractType, GameClass
+from gg2haxxy25.common.models import Contract
+from gg2haxxy25.gg2.network import write
+from gg2haxxy25.gg2.schemas.base import GG2Serializable
+
+
+class GG2OutContract(BaseModel, GG2Serializable):
+    identifier: UUID
+    contract_type: ContractType
+    value: int
+    target_value: int
+    game_class: GameClass
+    points: int
+
+    @classmethod
+    def from_contract(cls, contract: Contract) -> Self:
+        return cls(**contract.model_dump(include=set(cls.model_fields.keys())))
+
+    def to_bytes(self) -> bytes:
+        return (
+            write.uuid(self.identifier)
+            + write.uchar(self.contract_type.value)
+            + write.uchar(self.value)
+            + write.uchar(self.target_value)
+            + write.uchar(self.game_class.value)
+            + write.uchar(self.points)
+        )
+
+
+class GG2OutNewContract(BaseModel, GG2Serializable):
+    identifier: UUID
+    contract_type: ContractType
+    target_value: int
+    game_class: GameClass
+    points: int
+
+    @classmethod
+    def from_contract(cls, contract: Contract) -> Self:
+        return cls(**contract.model_dump(include=set(cls.model_fields.keys())))
+
+    def to_bytes(self) -> bytes:
+        return (
+            write.uuid(self.identifier)
+            + write.uchar(self.contract_type.value)
+            + write.uchar(self.target_value)
+            + write.uchar(self.game_class.value)
+            + write.uchar(self.points)
+        )
+
+
+class GG2OutContractUpdateData(BaseModel, GG2Serializable):
+    challenge_token: UUID
+    completed_contract_ids: list[UUID]
+    new_contracts: list[GG2OutNewContract]
+
+    def to_bytes(self) -> bytes:
+        buffer = bytearray()
+
+        buffer += write.uuid(self.challenge_token)
+
+        buffer += write.uchar(len(self.completed_contract_ids))
+        for completed_contract in self.completed_contract_ids:
+            buffer += write.uuid(completed_contract)
+
+        buffer += write.uchar(len(self.new_contracts))
+        for new_contract in self.new_contracts:
+            buffer += new_contract.to_bytes()
+
+        return bytes(buffer)

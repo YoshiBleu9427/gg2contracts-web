@@ -6,11 +6,23 @@ Python 3.12 with uv, FastAPI, Nextcord, Sqlite
 
 ## Dev
 
+Install with uv
+
+```bash
+uv sync
+```
+
 Format with ruff
 
 ```bash
 ruff format
 ruff check --fix
+```
+
+Typing with mypy
+
+```bash
+mypy src
 ```
 
 ### Python components

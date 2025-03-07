@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse
 from sqlmodel import select
 
 from gg2haxxy25.common.db.engine import SessionDep
-from gg2haxxy25.common.models.user import User
+from gg2haxxy25.common.models import User
 from gg2haxxy25.webapp.settings import templates
 
 router = APIRouter()

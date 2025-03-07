@@ -6,8 +6,7 @@ from sqlmodel import select
 
 from gg2haxxy25.common.db.engine import SessionDep
 from gg2haxxy25.common.enums import GameClass
-from gg2haxxy25.common.models.contract import Contract
-from gg2haxxy25.common.models.user import User
+from gg2haxxy25.common.models import Contract, User
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
 
@@ -49,6 +48,6 @@ def create_user(schema: InUserSchema, session: SessionDep) -> OutUserSchema:
     return OutUserSchema(
         identifier=new_user.identifier,
         username=new_user.username,
-        main_class=new_user.main_class,
+        main_class=new_user.main_class.name,
         contracts=[],
     )

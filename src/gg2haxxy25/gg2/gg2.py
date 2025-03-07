@@ -1,3 +1,0 @@
-from uuid import UUID
-
-MAGIC_HELLO = UUID("fe8300b349784a428e48b07c04934a18")

@@ -1,10 +1,13 @@
+from io import BytesIO
 from typing import Self
 
 
-class GG2Model:
+class GG2Serializable:
     def to_bytes(self) -> bytes:
         raise NotImplementedError
 
+
+class GG2Deserializable:
     @classmethod
-    def from_bytes(data: bytes) -> Self:
+    def from_bytes(cls, data: BytesIO) -> Self:
         raise NotImplementedError
