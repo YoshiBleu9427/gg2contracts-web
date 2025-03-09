@@ -1,4 +1,4 @@
-from io import BytesIO
+import socket
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -12,9 +12,9 @@ class InPlayerContractUpdate(BaseModel, GG2Deserializable):
     value_modifier: int
 
     @classmethod
-    def from_bytes(cls, data: BytesIO):
-        contract_id = read.uuid(data)
-        value_mod = read.uchar(data)
+    def from_bytes(cls, s: socket.socket):
+        contract_id = read.uuid(s)
+        value_mod = read.uchar(s)
         return InPlayerContractUpdate(contract_id=contract_id, value_modifier=value_mod)
 
 
@@ -23,11 +23,11 @@ class InPlayerRoundEndData(BaseModel, GG2Deserializable):
     contracts: list[InPlayerContractUpdate]
 
     @classmethod
-    def from_bytes(cls, data: BytesIO):
-        challenge_token = read.uuid(data)
-        contract_count = read.uchar(data)
+    def from_bytes(cls, s: socket.socket):
+        challenge_token = read.uuid(s)
+        contract_count = read.uchar(s)
         contracts = [
-            InPlayerContractUpdate.from_bytes(data) for _ in range(contract_count)
+            InPlayerContractUpdate.from_bytes(s) for _ in range(contract_count)
         ]
 
         return InPlayerRoundEndData(

@@ -1,4 +1,5 @@
-from io import BytesIO
+import socket
+from socketserver import StreamRequestHandler
 from typing import Callable
 from uuid import UUID, uuid4
 
@@ -21,39 +22,44 @@ class FailedInteraction(Exception):
     pass
 
 
-class MessageHandler:
-    def __init__(self) -> None:
+class MessageHandler(StreamRequestHandler):
+    def __init__(self, *args, **kwargs) -> None:
         self.session = next(get_session())
         self.expecting_data = True
         self.got_hello = False
         self.user: User | None = None
 
-    def handle_data(self, buffer: BytesIO) -> bytes:
-        header_byte = read.uchar(buffer)
+        self.request: socket.socket
+        super().__init__(*args, **kwargs)
+
+    def handle(self) -> None:
+        header_byte = read.uchar(self.request)
         try:
             header = RequestMessageHeader(header_byte)
         except ValueError:
             print(f"  Bad header {header_byte}")
             self.expecting_data = False
-            return write.uchar(ResponseMessageHeader.FAIL)
+            self.request.send(write.uchar(ResponseMessageHeader.FAIL))
+            return
 
         func = REQUEST_MESSAGE_CONTENT_BY_TYPE[header]
         print(f"  {func.__name__}")
 
         try:
-            result = func(self, buffer)
+            result = func(self)
         except FailedInteraction:
             print(f"  FailedInteraction {header}")
             self.expecting_data = False
-            return write.uchar(ResponseMessageHeader.FAIL)
+            self.request.send(write.uchar(ResponseMessageHeader.FAIL))
+            return
 
-        return result
+        self.request.send(result)
 
-    def on_hello(self, data: BytesIO) -> bytes:
+    def on_hello(self) -> bytes:
         if self.got_hello:
             raise FailedInteraction
 
-        given_magic = read.uuid(data)
+        given_magic = read.uuid(self.request)
         if given_magic != MAGIC_HELLO:
             raise FailedInteraction
 
@@ -61,11 +67,11 @@ class MessageHandler:
 
         return write.uchar(ResponseMessageHeader.HELLO)
 
-    def on_login(self, data: BytesIO) -> bytes:
+    def on_login(self) -> bytes:
         if not self.got_hello:
             raise FailedInteraction
 
-        given_token = read.uuid(data)
+        given_token = read.uuid(self.request)
         print(f"  Key {given_token}")
         user = queries.get_user(self.session, by__key_token=given_token)
         if not user:
@@ -74,12 +80,12 @@ class MessageHandler:
         self.user = user
         return write.uchar(ResponseMessageHeader.SUCCESS)
 
-    def on_new_account(self, data: BytesIO) -> bytes:
+    def on_new_account(self) -> bytes:
         if not self.got_hello:
             raise FailedInteraction
 
-        given_username = read.short_string(data)
-        given_class = read.uchar(data)
+        given_username = read.short_string(self.request)
+        given_class = read.uchar(self.request)
 
         print(f"  {given_username} [{given_class}]")
 
@@ -92,14 +98,14 @@ class MessageHandler:
         self.user = new_user
         return write.uuid(new_user.key_token)
 
-    def on_set_username(self, data: BytesIO) -> bytes:
+    def on_set_username(self) -> bytes:
         if not self.got_hello:
             raise FailedInteraction
 
         if not self.user:
             raise FailedInteraction
 
-        given_string = read.short_string(data)
+        given_string = read.short_string(self.request)
         print(f"  {given_string}")
         self.user.username = given_string
         self.session.add(self.user)
@@ -107,14 +113,14 @@ class MessageHandler:
 
         return write.uchar(ResponseMessageHeader.SUCCESS)
 
-    def on_player_joins_server(self, data: BytesIO) -> bytes:
+    def on_player_joins_server(self) -> bytes:
         if not self.got_hello:
             raise FailedInteraction
 
         if not self.user:
             raise FailedInteraction
 
-        given_server_id = read.uuid(data)
+        given_server_id = read.uuid(self.request)
         print(f"  server id {given_server_id}")
 
         found_server = queries.get_game_server(self.session, given_server_id)
@@ -159,7 +165,7 @@ class MessageHandler:
             + bytes(contract_bytes)
         )
 
-    def on_request_contracts(self, data: BytesIO) -> bytes:
+    def on_request_contracts(self) -> bytes:
         if not self.got_hello:
             raise FailedInteraction
 
@@ -181,7 +187,7 @@ class MessageHandler:
             contract_bytes
         )
 
-    def on_server_register(self, data: BytesIO) -> bytes:
+    def on_server_register(self) -> bytes:
         if not self.got_hello:
             raise FailedInteraction
 
@@ -194,12 +200,12 @@ class MessageHandler:
 
         return write.uuid(new_server.identifier)
 
-    def on_server_receives_client(self, data: BytesIO) -> bytes:
+    def on_server_receives_client(self) -> bytes:
         if not self.got_hello:
             raise FailedInteraction
 
-        server_id = read.uuid(data)
-        challenge_token = read.uuid(data)
+        server_id = read.uuid(self.request)
+        challenge_token = read.uuid(self.request)
         print(f"  server id {server_id}")
         print(f"  challenge {challenge_token}")
 
@@ -224,11 +230,11 @@ class MessageHandler:
         print("  challenge validated")
         return write.uchar(ResponseMessageHeader.SUCCESS)
 
-    def on_server_sends_game_data(self, data: BytesIO) -> bytes:
+    def on_server_sends_game_data(self) -> bytes:
         if not self.got_hello:
             raise FailedInteraction
 
-        server_id = read.uuid(data)
+        server_id = read.uuid(self.request)
         found_server = queries.get_game_server(self.session, by__identifier=server_id)
         if not found_server:
             raise FailedInteraction
@@ -248,10 +254,10 @@ class MessageHandler:
         pre_update_data = []
 
         # deserialize data
-        item_count = read.uchar(data)
+        item_count = read.uchar(self.request)
         print(f"  reading {item_count} items")
         for _ in range(item_count):
-            deserialized_data = inschemas.InPlayerRoundEndData.from_bytes(data)
+            deserialized_data = inschemas.InPlayerRoundEndData.from_bytes(self.request)
             user = users_by_challenge.get(deserialized_data.challenge_token)
             if not user:
                 print(
@@ -317,7 +323,7 @@ class MessageHandler:
 
 
 REQUEST_MESSAGE_CONTENT_BY_TYPE: dict[
-    RequestMessageHeader, Callable[[MessageHandler, BytesIO], bytes]
+    RequestMessageHeader, Callable[[MessageHandler], bytes]
 ] = {
     RequestMessageHeader.HELLO: MessageHandler.on_hello,
     RequestMessageHeader.LOGIN: MessageHandler.on_login,

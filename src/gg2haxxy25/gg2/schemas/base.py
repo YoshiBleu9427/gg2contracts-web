@@ -1,4 +1,4 @@
-from io import BytesIO
+import socket
 from typing import Self
 
 
@@ -9,5 +9,5 @@ class GG2Serializable:
 
 class GG2Deserializable:
     @classmethod
-    def from_bytes(cls, data: BytesIO) -> Self:
+    def from_bytes(cls, s: socket.socket) -> Self:
         raise NotImplementedError

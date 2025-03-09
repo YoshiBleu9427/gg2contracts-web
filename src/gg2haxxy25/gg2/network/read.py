@@ -1,27 +1,41 @@
+import socket
 import struct
-from io import BytesIO
 from uuid import UUID
 
 
-def uchar(b: BytesIO) -> int:
-    return struct.unpack("<B", b.read(1))[0]
+def _fetch(s: socket.socket, n: int) -> bytes:
+    """
+    Reads from the given socket until exactly n bytes have been read.
+    """
+    need_count = n
+    buffer = bytearray()
+    while need_count > 0:
+        this_read_buf = s.recv(need_count)
+        this_read_count = len(this_read_buf)
+        need_count -= this_read_count
+        buffer += this_read_buf
+    return bytes(buffer)
 
 
-def ushort(b: BytesIO) -> int:
-    return struct.unpack("<H", b.read(2))[0]
+def uchar(s: socket.socket) -> int:
+    return struct.unpack("<B", _fetch(s, 1))[0]
 
 
-def uuid(b: BytesIO) -> UUID:
-    return UUID(bytes=b.read(16))
+def ushort(s: socket.socket) -> int:
+    return struct.unpack("<H", _fetch(s, 2))[0]
 
 
-def short_string(b: BytesIO) -> str:
-    str_len: int = struct.unpack("<B", b.read(1))[0]
-    str_bytes = b.read(str_len)
+def uuid(s: socket.socket) -> UUID:
+    return UUID(bytes=_fetch(s, 16))
+
+
+def short_string(s: socket.socket) -> str:
+    str_len: int = struct.unpack("<B", _fetch(s, 1))[0]
+    str_bytes = _fetch(s, str_len)
     return str(str_bytes, "utf-8")
 
 
-def long_string(b: BytesIO) -> str:
-    str_len: int = struct.unpack("<H", b.read(2))[0]
-    str_bytes = b.read(str_len)
+def long_string(s: socket.socket) -> str:
+    str_len: int = struct.unpack("<H", _fetch(s, 2))[0]
+    str_bytes = _fetch(s, str_len)
     return str(str_bytes, "utf-8")
