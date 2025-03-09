@@ -25,6 +25,7 @@ class MessageHandler:
     def __init__(self) -> None:
         self.session = next(get_session())
         self.expecting_data = True
+        self.got_hello = False
         self.user: User | None = None
 
     def handle_data(self, buffer: BytesIO) -> bytes:
@@ -37,6 +38,7 @@ class MessageHandler:
             return write.uchar(ResponseMessageHeader.FAIL)
 
         func = REQUEST_MESSAGE_CONTENT_BY_TYPE[header]
+        print(f"  {func.__name__}")
 
         try:
             result = func(self, buffer)
@@ -48,15 +50,21 @@ class MessageHandler:
         return result
 
     def on_hello(self, data: BytesIO) -> bytes:
-        print("  Hello")
+        if self.got_hello:
+            raise FailedInteraction
+
         given_magic = read.uuid(data)
         if given_magic != MAGIC_HELLO:
             raise FailedInteraction
 
+        self.got_hello = True
+
         return write.uchar(ResponseMessageHeader.HELLO)
 
     def on_login(self, data: BytesIO) -> bytes:
-        print("  Login")
+        if not self.got_hello:
+            raise FailedInteraction
+
         given_token = read.uuid(data)
         print(f"  Key {given_token}")
         user = queries.get_user(self.session, by__key_token=given_token)
@@ -67,7 +75,9 @@ class MessageHandler:
         return write.uchar(ResponseMessageHeader.SUCCESS)
 
     def on_new_account(self, data: BytesIO) -> bytes:
-        print("  New account")
+        if not self.got_hello:
+            raise FailedInteraction
+
         given_username = read.short_string(data)
         given_class = read.uchar(data)
 
@@ -83,7 +93,9 @@ class MessageHandler:
         return write.uuid(new_user.key_token)
 
     def on_set_username(self, data: BytesIO) -> bytes:
-        print("  Set username")
+        if not self.got_hello:
+            raise FailedInteraction
+
         if not self.user:
             raise FailedInteraction
 
@@ -96,7 +108,9 @@ class MessageHandler:
         return write.uchar(ResponseMessageHeader.SUCCESS)
 
     def on_player_joins_server(self, data: BytesIO) -> bytes:
-        print("  Player joins")
+        if not self.got_hello:
+            raise FailedInteraction
+
         if not self.user:
             raise FailedInteraction
 
@@ -107,10 +121,14 @@ class MessageHandler:
         if not found_server:
             raise FailedInteraction
 
-        self.user.last_joined_server = given_server_id
-        self.user.challenge_token = uuid4()
-        self.session.add(self.user)
+        # Generate challenge
+        if self.user.last_joined_server != given_server_id:
+            self.user.last_joined_server = given_server_id
+            self.user.challenge_token = uuid4()
 
+        assert self.user.challenge_token  # assert not None, for typing
+
+        # Generate contracts
         existing_contracts = queries.get_contracts(
             self.session, by__user_identifier=self.user.identifier, by__completed=False
         )
@@ -124,6 +142,7 @@ class MessageHandler:
 
         self.session.commit()
 
+        # Serialize
         contract_bytes = bytearray()
         contract_bytes += write.uchar(len(existing_contracts))
         for contract in existing_contracts:
@@ -141,7 +160,9 @@ class MessageHandler:
         )
 
     def on_request_contracts(self, data: BytesIO) -> bytes:
-        print("  Get contracts")
+        if not self.got_hello:
+            raise FailedInteraction
+
         if not self.user:
             raise FailedInteraction
 
@@ -149,20 +170,21 @@ class MessageHandler:
             self.session, by__user_identifier=self.user.identifier, by__completed=False
         )
 
-        # serialize contracts
+        # Serialize
         contract_bytes = bytearray()
         contract_bytes += write.uchar(len(active_contracts))
         for contract in active_contracts:
             serialized_contract = outschemas.GG2OutContract.from_contract(contract)
             contract_bytes += serialized_contract.to_bytes()
 
-        # send
         return write.uchar(ResponseMessageHeader.PLAYER_CONTRACTS) + bytes(
             contract_bytes
         )
 
     def on_server_register(self, data: BytesIO) -> bytes:
-        print("  Server register")
+        if not self.got_hello:
+            raise FailedInteraction
+
         new_server = GameServer()
         self.session.add(new_server)
         self.session.commit()
@@ -173,7 +195,9 @@ class MessageHandler:
         return write.uuid(new_server.identifier)
 
     def on_server_receives_client(self, data: BytesIO) -> bytes:
-        print("  Server receives client")
+        if not self.got_hello:
+            raise FailedInteraction
+
         server_id = read.uuid(data)
         challenge_token = read.uuid(data)
         print(f"  server id {server_id}")
@@ -201,7 +225,9 @@ class MessageHandler:
         return write.uchar(ResponseMessageHeader.SUCCESS)
 
     def on_server_sends_game_data(self, data: BytesIO) -> bytes:
-        print("  server sends game data")
+        if not self.got_hello:
+            raise FailedInteraction
+
         server_id = read.uuid(data)
         found_server = queries.get_game_server(self.session, by__identifier=server_id)
         if not found_server:
@@ -229,7 +255,8 @@ class MessageHandler:
             user = users_by_challenge.get(deserialized_data.challenge_token)
             if not user:
                 print(
-                    f"    ignoring unknown challenge {deserialized_data.challenge_token}"
+                    "    ignoring unknown challenge "
+                    f"{deserialized_data.challenge_token}"
                 )
                 # ignore data if player moved to another server ig
                 # TODO think about this more
