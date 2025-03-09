@@ -103,24 +103,33 @@ class MessageHandler:
         given_server_id = read.uuid(data)
         print(f"  server id {given_server_id}")
 
-        # TODO fail if server does not exist
+        found_server = queries.get_game_server(self.session, given_server_id)
+        if not found_server:
+            raise FailedInteraction
 
         self.user.last_joined_server = given_server_id
         self.user.challenge_token = uuid4()
         self.session.add(self.user)
 
-        # TODO generate contracts?
-        new_contract = generate_contract(self.user)
-        self.session.add(new_contract)
-        self.session.commit()
-
-        contracts = queries.get_contracts(
+        existing_contracts = queries.get_contracts(
             self.session, by__user_identifier=self.user.identifier, by__completed=False
         )
 
+        to_create_count = 3 - len(existing_contracts)  # TODO settings
+        new_contracts = []
+        for _ in range(to_create_count):
+            new_contract = generate_contract(self.user)
+            self.session.add(new_contract)
+            new_contracts.append(new_contract)
+
+        self.session.commit()
+
         contract_bytes = bytearray()
-        contract_bytes += write.uchar(len(contracts))
-        for contract in contracts:
+        contract_bytes += write.uchar(len(existing_contracts))
+        for contract in existing_contracts:
+            serialized_contract = outschemas.GG2OutContract.from_contract(contract)
+            contract_bytes += serialized_contract.to_bytes()
+        for contract in new_contracts:
             serialized_contract = outschemas.GG2OutContract.from_contract(contract)
             contract_bytes += serialized_contract.to_bytes()
 
