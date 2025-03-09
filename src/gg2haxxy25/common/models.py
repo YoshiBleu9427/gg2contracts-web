@@ -41,7 +41,12 @@ class User(SQLModel, table=True):
 
 
 class Contract(SQLModel, table=True):
-    identifier: UUID = Field(default=None, primary_key=True)
+    identifier: UUID = Field(
+        default_factory=uuid4,
+        primary_key=True,
+        index=True,
+        nullable=False,
+    )
     contract_type: ContractType
     value: int
     target_value: int
@@ -51,3 +56,15 @@ class Contract(SQLModel, table=True):
 
     user_identifier: UUID = Field(default=None, foreign_key="user.identifier")
     user: "User" = Relationship(back_populates="contracts")
+
+    def update_value(self, modifier: int):
+        was_completed = self.completed
+
+        self.value += modifier
+        self.completed = self.value >= self.target_value
+
+        if self.completed and not was_completed:
+            self._on_completion()
+
+    def _on_completion(self):
+        self.user.points += self.points

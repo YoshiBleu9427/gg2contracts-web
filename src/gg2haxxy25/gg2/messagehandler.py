@@ -1,8 +1,8 @@
-import struct
 from io import BytesIO
 from typing import Callable
-from uuid import uuid4
+from uuid import UUID, uuid4
 
+from gg2haxxy25.common.contract_gen import generate_contract
 from gg2haxxy25.common.db import queries
 from gg2haxxy25.common.db.engine import get_session
 from gg2haxxy25.common.models import GameServer, User
@@ -28,7 +28,7 @@ class MessageHandler:
         self.user: User | None = None
 
     def handle_data(self, buffer: BytesIO) -> bytes:
-        header_byte = struct.unpack("<B", buffer.read(1))[0]
+        header_byte = read.uchar(buffer)
         try:
             header = RequestMessageHeader(header_byte)
         except ValueError:
@@ -110,6 +110,9 @@ class MessageHandler:
         self.session.add(self.user)
 
         # TODO generate contracts?
+        new_contract = generate_contract(self.user)
+        self.session.add(new_contract)
+        self.session.commit()
 
         contracts = queries.get_contracts(
             self.session, by__user_identifier=self.user.identifier, by__completed=False
@@ -120,8 +123,6 @@ class MessageHandler:
         for contract in contracts:
             serialized_contract = outschemas.GG2OutContract.from_contract(contract)
             contract_bytes += serialized_contract.to_bytes()
-
-        self.session.commit()
 
         return (
             write.uchar(ResponseMessageHeader.CHALLENGE_TOKEN)
@@ -138,12 +139,18 @@ class MessageHandler:
         active_contracts = queries.get_contracts(
             self.session, by__user_identifier=self.user.identifier, by__completed=False
         )
-        # TODO
 
-        # if < 3, generate new contract
         # serialize contracts
+        contract_bytes = bytearray()
+        contract_bytes += write.uchar(len(active_contracts))
+        for contract in active_contracts:
+            serialized_contract = outschemas.GG2OutContract.from_contract(contract)
+            contract_bytes += serialized_contract.to_bytes()
+
         # send
-        raise FailedInteraction
+        return write.uchar(ResponseMessageHeader.PLAYER_CONTRACTS) + bytes(
+            contract_bytes
+        )
 
     def on_server_register(self, data: BytesIO) -> bytes:
         print("  Server register")
@@ -193,30 +200,84 @@ class MessageHandler:
 
         print(f"  server id {server_id}")
 
-        # deserialize data
-        # TODO this is the wrong schema
-        deserialized_data = inschemas.GG2InContractData.from_bytes(data)
-
-        # compute fulfilled contracts
+        # find users that we know have played on this server
         server_users = queries.get_users(
             self.session, by__server_id=server_id, by__server_validated=True
         )
-        # TODO
+        print(f"  server has {len(server_users)} known users")
 
-        # create new contracts maybe TODO
+        users_by_challenge = {
+            user.challenge_token: user for user in server_users if user.challenge_token
+        }
 
-        # for each player
-        # TODO move to function elsewhere
-        serialized_data = b""
-        for user in server_users:
-            assert user.challenge_token
-            serialized_data += write.uuid(user.challenge_token)
-            serialized_data += write.uchar(0)  # completed contracts
-            # serialized_data += contract.to_bytes()
-            serialized_data += write.uchar(0)  # new contracts
-            # serialized_data += contract.to_bytes()
+        pre_update_data = []
 
-        return write.uchar(ResponseMessageHeader.UPDATE_CONTRACTS) + serialized_data
+        # deserialize data
+        item_count = read.uchar(data)
+        print(f"  reading {item_count} items")
+        for _ in range(item_count):
+            deserialized_data = inschemas.InPlayerRoundEndData.from_bytes(data)
+            user = users_by_challenge.get(deserialized_data.challenge_token)
+            if not user:
+                print(
+                    f"    ignoring unknown challenge {deserialized_data.challenge_token}"
+                )
+                # ignore data if player moved to another server ig
+                # TODO think about this more
+                # because otherwise gameserver needs to keep track of
+                # players reconnecting
+                continue
+
+            user_contracts_by_id = {con.identifier: con for con in user.contracts}
+            print(f"    user {user.identifier} has {len(user.contracts)}")
+
+            completed_ids: list[UUID] = []
+            new_contracts = []
+            for con_data in deserialized_data.contracts:
+                contract = user_contracts_by_id[con_data.contract_id]
+                contract.update_value(con_data.value_modifier)
+                if contract.completed:
+                    completed_ids.append(contract.identifier)
+                    new_contract = generate_contract(user)
+                    self.session.add(new_contract)
+                    new_contracts.append(new_contract)
+
+            print(f"    generated {len(new_contracts)} new contracts")
+
+            # TODO refactor because this is stupid
+            pre_update_data.append(
+                {
+                    "challenge_token": deserialized_data.challenge_token,
+                    "completed_contract_ids": completed_ids,
+                    "new_contracts": new_contracts,
+                }
+            )
+
+        self.session.commit()
+
+        update_data: list[outschemas.GG2OutContractUpdateData] = []
+        for item in pre_update_data:
+            for new_contract in item["new_contracts"]:
+                self.session.refresh(new_contract)
+
+            update_data_for_user = outschemas.GG2OutContractUpdateData(
+                challenge_token=item["challenge_token"],
+                completed_contract_ids=item["completed_contract_ids"],
+                new_contracts=[
+                    outschemas.GG2OutNewContract.from_contract(new_contract)
+                    for new_contract in item["new_contracts"]
+                ],
+            )
+            update_data.append(update_data_for_user)
+
+        serialized_data = bytearray()
+        serialized_data += write.uchar(len(update_data))
+        for item in update_data:
+            serialized_data += item.to_bytes()
+
+        return write.uchar(ResponseMessageHeader.UPDATE_CONTRACTS) + bytes(
+            serialized_data
+        )
 
 
 REQUEST_MESSAGE_CONTENT_BY_TYPE: dict[

@@ -1,4 +1,4 @@
-from enum import IntEnum, auto
+from enum import IntEnum
 
 
 class ContractType(IntEnum):
@@ -7,18 +7,20 @@ class ContractType(IntEnum):
     KILLS_AS_CLASS = 3
     HEALING = 4
     UBERS = 5
-    ROUNDS = 6
+    ROUNDS_PLAYED = 6
+    ROUNDS_WON = 7
+
+    DEBUG = 69
 
 
 class GameClass(IntEnum):
-    # TODO match those to the gg2 constants
-    RUNNER = auto()
-    FIREBUG = auto()
-    ROCKETMAN = auto()
-    OVERWEIGHT = auto()
-    DETONATOR = auto()
-    HEALER = auto()
-    CONSTRUCTOR = auto()
-    RIFLEMAN = auto()
-    INFILTRATOR = auto()
-    QUOTE = auto()
+    RUNNER = 0
+    FIREBUG = 8
+    ROCKETMAN = 1
+    OVERWEIGHT = 6
+    DETONATOR = 3
+    HEALER = 4
+    CONSTRUCTOR = 5
+    RIFLEMAN = 2
+    INFILTRATOR = 7
+    QUOTE = 9
