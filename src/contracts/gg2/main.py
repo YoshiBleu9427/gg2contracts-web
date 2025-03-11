@@ -1,4 +1,4 @@
-from gg2haxxy25.gg2.tcpserver import setup_server
+from contracts.gg2.tcpserver import setup_server
 
 
 def main():

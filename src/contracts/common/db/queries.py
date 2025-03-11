@@ -3,7 +3,7 @@ from uuid import UUID
 
 from sqlmodel import Session, select
 
-from gg2haxxy25.common.models import Contract, GameServer, User
+from contracts.common.models import Contract, GameServer, User
 
 
 def get_users(

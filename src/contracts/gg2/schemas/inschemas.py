@@ -3,8 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from gg2haxxy25.gg2.network import read
-from gg2haxxy25.gg2.schemas.base import GG2Deserializable
+from contracts.gg2.network import read
+from contracts.gg2.schemas.base import GG2Deserializable
 
 
 class InPlayerContractUpdate(BaseModel, GG2Deserializable):

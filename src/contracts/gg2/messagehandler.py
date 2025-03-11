@@ -3,17 +3,17 @@ from socketserver import StreamRequestHandler
 from typing import Callable
 from uuid import UUID, uuid4
 
-from gg2haxxy25.common.contract_gen import generate_contract
-from gg2haxxy25.common.db import queries
-from gg2haxxy25.common.db.engine import get_session
-from gg2haxxy25.common.models import GameServer, User
-from gg2haxxy25.gg2.network import read, write
-from gg2haxxy25.gg2.network.constants import (
+from contracts.common.contract_gen import generate_contract
+from contracts.common.db import queries
+from contracts.common.db.engine import get_session
+from contracts.common.models import GameServer, User
+from contracts.gg2.network import read, write
+from contracts.gg2.network.constants import (
     MAGIC_HELLO,
     RequestMessageHeader,
     ResponseMessageHeader,
 )
-from gg2haxxy25.gg2.schemas import inschemas, outschemas
+from contracts.gg2.schemas import inschemas, outschemas
 
 # TODO replace print with logger
 

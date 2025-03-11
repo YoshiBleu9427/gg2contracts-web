@@ -1,7 +1,7 @@
 import logging
 from socketserver import ThreadingTCPServer
 
-from gg2haxxy25.gg2.messagehandler import MessageHandler
+from contracts.gg2.messagehandler import MessageHandler
 
 logger = logging.getLogger(__name__)
 

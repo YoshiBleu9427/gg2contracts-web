@@ -4,9 +4,9 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from sqlmodel import select
 
-from gg2haxxy25.common.db.engine import SessionDep
-from gg2haxxy25.common.enums import GameClass
-from gg2haxxy25.common.models import Contract, User
+from contracts.common.db.engine import SessionDep
+from contracts.common.enums import GameClass
+from contracts.common.models import Contract, User
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
 

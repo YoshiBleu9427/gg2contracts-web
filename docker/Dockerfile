@@ -9,4 +9,4 @@ RUN uv install
 WORKDIR src
 ENTRYPOINT [ "python" ]
 
-CMD ["gg2haxxy25/gg2/main.py"]
+CMD ["contracts/gg2/main.py"]

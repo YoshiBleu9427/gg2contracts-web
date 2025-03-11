@@ -3,7 +3,7 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from gg2haxxy25.common.models import ContractBaseModel
+from contracts.common.models import ContractBaseModel
 
 config = context.config
 

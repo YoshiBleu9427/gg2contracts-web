@@ -2,9 +2,9 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from sqlmodel import select
 
-from gg2haxxy25.common.db.engine import SessionDep
-from gg2haxxy25.common.models import User
-from gg2haxxy25.webapp.settings import templates
+from contracts.common.db.engine import SessionDep
+from contracts.common.models import User
+from contracts.webapp.settings import templates
 
 router = APIRouter()
 

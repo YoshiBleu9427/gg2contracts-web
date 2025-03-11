@@ -1,5 +1,5 @@
-from gg2haxxy25.common.enums import ContractType
-from gg2haxxy25.common.models import Contract, User
+from contracts.common.enums import ContractType
+from contracts.common.models import Contract, User
 
 # TODO test assert all enum options are here
 

@@ -2,7 +2,7 @@ from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from gg2haxxy25.common.enums import ContractType, GameClass
+from contracts.common.enums import ContractType, GameClass
 
 
 class ContractBaseModel(SQLModel):

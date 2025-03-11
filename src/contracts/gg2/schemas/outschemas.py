@@ -3,10 +3,10 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from gg2haxxy25.common.enums import ContractType, GameClass
-from gg2haxxy25.common.models import Contract
-from gg2haxxy25.gg2.network import write
-from gg2haxxy25.gg2.schemas.base import GG2Serializable
+from contracts.common.enums import ContractType, GameClass
+from contracts.common.models import Contract
+from contracts.gg2.network import write
+from contracts.gg2.schemas.base import GG2Serializable
 
 
 class GG2OutContract(BaseModel, GG2Serializable):
