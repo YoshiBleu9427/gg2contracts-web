@@ -1,0 +1,11 @@
+Alembic manages model updates and database migrations.
+
+Create new migration:
+```bash
+alembic revision --autogenerate -m "New migration"
+```
+
+Update database:
+```bash
+alembic upgrade head
+```

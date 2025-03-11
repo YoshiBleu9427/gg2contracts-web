@@ -5,7 +5,11 @@ from sqlmodel import Field, Relationship, SQLModel
 from gg2haxxy25.common.enums import ContractType, GameClass
 
 
-class GameServer(SQLModel, table=True):
+class ContractBaseModel(SQLModel):
+    pass
+
+
+class GameServer(ContractBaseModel, table=True):
     identifier: UUID = Field(
         default_factory=uuid4,
         primary_key=True,
@@ -14,7 +18,7 @@ class GameServer(SQLModel, table=True):
     )
 
 
-class User(SQLModel, table=True):
+class User(ContractBaseModel, table=True):
     identifier: UUID = Field(
         default_factory=uuid4,
         primary_key=True,
@@ -40,7 +44,7 @@ class User(SQLModel, table=True):
     server_validated_challenge: bool = Field(default=False)
 
 
-class Contract(SQLModel, table=True):
+class Contract(ContractBaseModel, table=True):
     identifier: UUID = Field(
         default_factory=uuid4,
         primary_key=True,

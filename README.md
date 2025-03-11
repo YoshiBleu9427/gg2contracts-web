@@ -44,4 +44,4 @@ Then the compose stack, compose.yml, uses those components and bundles them nice
 
 Sqlite file, created at `./database.db`.
 
-Delete it manually when updating db models and running db migrations. Yeah that's bad, maybe setup alembic instead
+Database migrations managed by alembic. `alembic upgrade head`
