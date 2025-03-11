@@ -22,6 +22,6 @@ class ResponseMessageHeader(IntEnum):
     SUCCESS = 1
     FAIL = 2
 
-    CHALLENGE_TOKEN = 10
+    SESSION_TOKEN = 10
     PLAYER_CONTRACTS = 11
     UPDATE_CONTRACTS = 12

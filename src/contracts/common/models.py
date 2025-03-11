@@ -16,6 +16,10 @@ class GameServer(ContractBaseModel, table=True):
         index=True,
         nullable=False,
     )
+    validation_token: UUID = Field(
+        default_factory=uuid4,
+        nullable=False,
+    )
 
 
 class User(ContractBaseModel, table=True):
@@ -38,10 +42,10 @@ class User(ContractBaseModel, table=True):
     last_joined_server: UUID | None = Field(
         default=None, foreign_key="gameserver.identifier", nullable=True
     )
-    challenge_token: UUID | None = Field(
+    session_token: UUID | None = Field(
         default=None, index=True, unique=True, nullable=True
     )
-    server_validated_challenge: bool = Field(default=False)
+    server_validated_session: bool = Field(default=False)
 
 
 class Contract(ContractBaseModel, table=True):

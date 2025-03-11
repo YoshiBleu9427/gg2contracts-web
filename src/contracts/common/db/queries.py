@@ -17,7 +17,7 @@ def get_users(
         query = query.where(User.last_joined_server == by__server_id)
 
     if by__server_validated is not None:
-        query = query.where(User.server_validated_challenge == by__server_validated)
+        query = query.where(User.server_validated_session == by__server_validated)
 
     return session.exec(query).all()
 
@@ -26,7 +26,7 @@ def get_user(
     session: Session,
     by__identifier: UUID | None = None,
     by__key_token: UUID | None = None,
-    by__challenge: UUID | None = None,
+    by__session_token: UUID | None = None,
 ) -> User | None:
     query = select(User)
 
@@ -36,8 +36,8 @@ def get_user(
     if by__key_token:
         query = query.where(User.key_token == by__key_token)
 
-    if by__challenge:
-        query = query.where(User.challenge_token == by__challenge)
+    if by__session_token:
+        query = query.where(User.session_token == by__session_token)
 
     return session.exec(query).one_or_none()
 

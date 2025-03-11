@@ -54,14 +54,14 @@ class GG2OutNewContract(BaseModel, GG2Serializable):
 
 
 class GG2OutContractUpdateData(BaseModel, GG2Serializable):
-    challenge_token: UUID
+    session_token: UUID
     completed_contract_ids: list[UUID]
     new_contracts: list[GG2OutNewContract]
 
     def to_bytes(self) -> bytes:
         buffer = bytearray()
 
-        buffer += write.uuid(self.challenge_token)
+        buffer += write.uuid(self.session_token)
 
         buffer += write.uchar(len(self.completed_contract_ids))
         for completed_contract in self.completed_contract_ids:

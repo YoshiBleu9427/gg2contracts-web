@@ -127,12 +127,12 @@ class MessageHandler(StreamRequestHandler):
         if not found_server:
             raise FailedInteraction
 
-        # Generate challenge
+        # Generate session
         if self.user.last_joined_server != given_server_id:
             self.user.last_joined_server = given_server_id
-            self.user.challenge_token = uuid4()
+            self.user.session_token = uuid4()
 
-        assert self.user.challenge_token  # assert not None, for typing
+        assert self.user.session_token  # assert not None, for typing
 
         # Generate contracts
         existing_contracts = queries.get_contracts(
@@ -159,8 +159,8 @@ class MessageHandler(StreamRequestHandler):
             contract_bytes += serialized_contract.to_bytes()
 
         return (
-            write.uchar(ResponseMessageHeader.CHALLENGE_TOKEN)
-            + write.uuid(self.user.challenge_token)
+            write.uchar(ResponseMessageHeader.SESSION_TOKEN)
+            + write.uuid(self.user.session_token)
             + write.uchar(ResponseMessageHeader.PLAYER_CONTRACTS)
             + bytes(contract_bytes)
         )
@@ -198,6 +198,8 @@ class MessageHandler(StreamRequestHandler):
 
         print(f"  Giving {new_server.identifier}")
 
+        # TODO generate validation token
+
         return write.uuid(new_server.identifier)
 
     def on_server_receives_client(self) -> bytes:
@@ -205,11 +207,11 @@ class MessageHandler(StreamRequestHandler):
             raise FailedInteraction
 
         server_id = read.uuid(self.request)
-        challenge_token = read.uuid(self.request)
+        session_token = read.uuid(self.request)
         print(f"  server id {server_id}")
-        print(f"  challenge {challenge_token}")
+        print(f"  session {session_token}")
 
-        found_user = queries.get_user(self.session, by__challenge=challenge_token)
+        found_user = queries.get_user(self.session, by__session_token=session_token)
         if not found_user:
             raise FailedInteraction
 
@@ -223,11 +225,11 @@ class MessageHandler(StreamRequestHandler):
             self.session.commit()
             raise FailedInteraction
 
-        found_user.server_validated_challenge = True
+        found_user.server_validated_session = True
         self.session.add(found_user)
         self.session.commit()
 
-        print("  challenge validated")
+        print("  session validated")
         return write.uchar(ResponseMessageHeader.SUCCESS)
 
     def on_server_sends_game_data(self) -> bytes:
@@ -241,14 +243,16 @@ class MessageHandler(StreamRequestHandler):
 
         print(f"  server id {server_id}")
 
+        # TODO consume validation token
+
         # find users that we know have played on this server
         server_users = queries.get_users(
             self.session, by__server_id=server_id, by__server_validated=True
         )
         print(f"  server has {len(server_users)} known users")
 
-        users_by_challenge = {
-            user.challenge_token: user for user in server_users if user.challenge_token
+        users_by_session = {
+            user.session_token: user for user in server_users if user.session_token
         }
 
         pre_update_data = []
@@ -258,12 +262,9 @@ class MessageHandler(StreamRequestHandler):
         print(f"  reading {item_count} items")
         for _ in range(item_count):
             deserialized_data = inschemas.InPlayerRoundEndData.from_bytes(self.request)
-            user = users_by_challenge.get(deserialized_data.challenge_token)
+            user = users_by_session.get(deserialized_data.session_token)
             if not user:
-                print(
-                    "    ignoring unknown challenge "
-                    f"{deserialized_data.challenge_token}"
-                )
+                print(f"    ignoring unknown session {deserialized_data.session_token}")
                 # ignore data if player moved to another server ig
                 # TODO think about this more
                 # because otherwise gameserver needs to keep track of
@@ -289,7 +290,7 @@ class MessageHandler(StreamRequestHandler):
             # TODO refactor because this is stupid
             pre_update_data.append(
                 {
-                    "challenge_token": deserialized_data.challenge_token,
+                    "session_token": deserialized_data.session_token,
                     "completed_contract_ids": completed_ids,
                     "new_contracts": new_contracts,
                 }
@@ -303,7 +304,7 @@ class MessageHandler(StreamRequestHandler):
                 self.session.refresh(new_contract)
 
             update_data_for_user = outschemas.GG2OutContractUpdateData(
-                challenge_token=item["challenge_token"],
+                session_token=item["session_token"],
                 completed_contract_ids=item["completed_contract_ids"],
                 new_contracts=[
                     outschemas.GG2OutNewContract.from_contract(new_contract)

@@ -19,17 +19,15 @@ class InPlayerContractUpdate(BaseModel, GG2Deserializable):
 
 
 class InPlayerRoundEndData(BaseModel, GG2Deserializable):
-    challenge_token: UUID
+    session_token: UUID
     contracts: list[InPlayerContractUpdate]
 
     @classmethod
     def from_bytes(cls, s: socket.socket):
-        challenge_token = read.uuid(s)
+        session_token = read.uuid(s)
         contract_count = read.uchar(s)
         contracts = [
             InPlayerContractUpdate.from_bytes(s) for _ in range(contract_count)
         ]
 
-        return InPlayerRoundEndData(
-            challenge_token=challenge_token, contracts=contracts
-        )
+        return InPlayerRoundEndData(session_token=session_token, contracts=contracts)
