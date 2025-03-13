@@ -33,27 +33,34 @@ class MessageHandler(StreamRequestHandler):
         super().__init__(*args, **kwargs)
 
     def handle(self) -> None:
-        header_byte = read.uchar(self.request)
-        try:
-            header = RequestMessageHeader(header_byte)
-        except ValueError:
-            print(f"  Bad header {header_byte}")
-            self.expecting_data = False
-            self.request.send(write.uchar(ResponseMessageHeader.FAIL))
-            return
+        print(f"[{self.request.getpeername()}] New connexion")
 
-        func = REQUEST_MESSAGE_CONTENT_BY_TYPE[header]
-        print(f"  {func.__name__}")
+        while self.expecting_data:
+            print(f"[{self.request.getpeername()}]  Awaiting header")
+            header_byte = read.uchar(self.request)
+            try:
+                header = RequestMessageHeader(header_byte)
+            except ValueError:
+                print(f"[{self.request.getpeername()}]  Bad header {header_byte}")
+                self.expecting_data = False
+                self.request.send(write.uchar(ResponseMessageHeader.FAIL))
+                return
 
-        try:
-            result = func(self)
-        except FailedInteraction:
-            print(f"  FailedInteraction {header}")
-            self.expecting_data = False
-            self.request.send(write.uchar(ResponseMessageHeader.FAIL))
-            return
+            func = REQUEST_MESSAGE_CONTENT_BY_TYPE[header]
+            print(f"[{self.request.getpeername()}]  {func.__name__}")
 
-        self.request.send(result)
+            try:
+                result = func(self)
+            except FailedInteraction:
+                print(f"[{self.request.getpeername()}]  FailedInteraction {header}")
+                self.expecting_data = False
+                self.request.send(write.uchar(ResponseMessageHeader.FAIL))
+                return
+
+            print(f"[{self.request.getpeername()}]  Sent response")
+            self.request.send(result)
+
+        print(f"[{self.request.getpeername()}] Closed connexion")
 
     def on_hello(self) -> bytes:
         if self.got_hello:
@@ -64,6 +71,7 @@ class MessageHandler(StreamRequestHandler):
             raise FailedInteraction
 
         self.got_hello = True
+        print("  got hello!")
 
         return write.uchar(ResponseMessageHeader.HELLO)
 
@@ -96,6 +104,7 @@ class MessageHandler(StreamRequestHandler):
         self.session.refresh(new_user)
 
         self.user = new_user
+        self.expecting_data = False
         return write.uuid(new_user.key_token)
 
     def on_set_username(self) -> bytes:
@@ -111,6 +120,7 @@ class MessageHandler(StreamRequestHandler):
         self.session.add(self.user)
         self.session.commit()
 
+        self.expecting_data = False
         return write.uchar(ResponseMessageHeader.SUCCESS)
 
     def on_player_joins_server(self) -> bytes:
@@ -158,6 +168,7 @@ class MessageHandler(StreamRequestHandler):
             serialized_contract = outschemas.GG2OutContract.from_contract(contract)
             contract_bytes += serialized_contract.to_bytes()
 
+        self.expecting_data = False
         return (
             write.uchar(ResponseMessageHeader.SESSION_TOKEN)
             + write.uuid(self.user.session_token)
@@ -183,6 +194,7 @@ class MessageHandler(StreamRequestHandler):
             serialized_contract = outschemas.GG2OutContract.from_contract(contract)
             contract_bytes += serialized_contract.to_bytes()
 
+        self.expecting_data = False
         return write.uchar(ResponseMessageHeader.PLAYER_CONTRACTS) + bytes(
             contract_bytes
         )
@@ -198,9 +210,10 @@ class MessageHandler(StreamRequestHandler):
 
         print(f"  Giving {new_server.identifier}")
 
-        # TODO generate validation token
-
-        return write.uuid(new_server.identifier)
+        self.expecting_data = False
+        return write.uuid(new_server.identifier) + write.uuid(
+            new_server.validation_token
+        )
 
     def on_server_receives_client(self) -> bytes:
         if not self.got_hello:
@@ -230,6 +243,7 @@ class MessageHandler(StreamRequestHandler):
         self.session.commit()
 
         print("  session validated")
+        self.expecting_data = False
         return write.uchar(ResponseMessageHeader.SUCCESS)
 
     def on_server_sends_game_data(self) -> bytes:
@@ -243,7 +257,13 @@ class MessageHandler(StreamRequestHandler):
 
         print(f"  server id {server_id}")
 
-        # TODO consume validation token
+        # consume validation token
+        server_validation_token = read.uuid(self.request)
+        if found_server.validation_token != server_validation_token:
+            raise FailedInteraction
+
+        found_server.validation_token = uuid4()
+        print("  validated token")
 
         # find users that we know have played on this server
         server_users = queries.get_users(
@@ -318,6 +338,7 @@ class MessageHandler(StreamRequestHandler):
         for item in update_data:
             serialized_data += item.to_bytes()
 
+        self.expecting_data = False
         return write.uchar(ResponseMessageHeader.UPDATE_CONTRACTS) + bytes(
             serialized_data
         )
