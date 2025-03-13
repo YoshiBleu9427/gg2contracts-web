@@ -169,12 +169,7 @@ class MessageHandler(StreamRequestHandler):
             contract_bytes += serialized_contract.to_bytes()
 
         self.expecting_data = False
-        return (
-            write.uchar(ResponseMessageHeader.SESSION_TOKEN)
-            + write.uuid(self.user.session_token)
-            + write.uchar(ResponseMessageHeader.PLAYER_CONTRACTS)
-            + bytes(contract_bytes)
-        )
+        return write.uuid(self.user.session_token) + bytes(contract_bytes)
 
     def on_request_contracts(self) -> bytes:
         if not self.got_hello:
@@ -195,9 +190,7 @@ class MessageHandler(StreamRequestHandler):
             contract_bytes += serialized_contract.to_bytes()
 
         self.expecting_data = False
-        return write.uchar(ResponseMessageHeader.PLAYER_CONTRACTS) + bytes(
-            contract_bytes
-        )
+        return bytes(contract_bytes)
 
     def on_server_register(self) -> bytes:
         if not self.got_hello:
@@ -334,14 +327,13 @@ class MessageHandler(StreamRequestHandler):
             update_data.append(update_data_for_user)
 
         serialized_data = bytearray()
+        serialized_data += write.uuid(found_server.validation_token)
         serialized_data += write.uchar(len(update_data))
         for item in update_data:
             serialized_data += item.to_bytes()
 
         self.expecting_data = False
-        return write.uchar(ResponseMessageHeader.UPDATE_CONTRACTS) + bytes(
-            serialized_data
-        )
+        return bytes(serialized_data)
 
 
 REQUEST_MESSAGE_CONTENT_BY_TYPE: dict[
