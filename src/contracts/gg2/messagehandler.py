@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 from contracts.common.contract_gen import generate_contract
 from contracts.common.db import queries
 from contracts.common.db.engine import get_session
-from contracts.common.models import GameServer, User
+from contracts.common.models import Contract, GameServer, User
 from contracts.gg2.network import read, write
 from contracts.gg2.network.constants import (
     MAGIC_HELLO,
@@ -54,6 +54,7 @@ class MessageHandler(StreamRequestHandler):
             except FailedInteraction:
                 print(f"[{self.request.getpeername()}]  FailedInteraction {header}")
                 self.expecting_data = False
+                self.session.rollback()
                 self.request.send(write.uchar(ResponseMessageHeader.FAIL))
                 return
 
@@ -150,7 +151,7 @@ class MessageHandler(StreamRequestHandler):
         )
 
         to_create_count = 3 - len(existing_contracts)  # TODO settings
-        new_contracts = []
+        new_contracts: list[Contract] = []
         for _ in range(to_create_count):
             new_contract = generate_contract(self.user)
             self.session.add(new_contract)
@@ -162,9 +163,11 @@ class MessageHandler(StreamRequestHandler):
         contract_bytes = bytearray()
         contract_bytes += write.uchar(len(existing_contracts))
         for contract in existing_contracts:
+            self.session.refresh(contract)  # TODO why do I need to do that???
             serialized_contract = outschemas.GG2OutContract.from_contract(contract)
             contract_bytes += serialized_contract.to_bytes()
         for contract in new_contracts:
+            self.session.refresh(contract)
             serialized_contract = outschemas.GG2OutContract.from_contract(contract)
             contract_bytes += serialized_contract.to_bytes()
 

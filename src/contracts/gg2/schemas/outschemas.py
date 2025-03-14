@@ -19,7 +19,7 @@ class GG2OutContract(BaseModel, GG2Serializable):
 
     @classmethod
     def from_contract(cls, contract: Contract) -> Self:
-        return cls(**contract.model_dump(include=set(cls.model_fields.keys())))
+        return cls(**contract.model_dump(include=cls.model_fields.keys()))  # type: ignore
 
     def to_bytes(self) -> bytes:
         return (
@@ -41,7 +41,7 @@ class GG2OutNewContract(BaseModel, GG2Serializable):
 
     @classmethod
     def from_contract(cls, contract: Contract) -> Self:
-        return cls(**contract.model_dump(include=set(cls.model_fields.keys())))
+        return cls(**contract.model_dump(include=cls.model_fields.keys()))  # type: ignore
 
     def to_bytes(self) -> bytes:
         return (
