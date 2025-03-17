@@ -37,7 +37,13 @@ class MessageHandler(StreamRequestHandler):
 
         while self.expecting_data:
             print(f"[{self.request.getpeername()}]  Awaiting header")
-            header_byte = read.uchar(self.request)
+            try:
+                header_byte = read.uchar(self.request)
+            except TimeoutError:
+                print(f"[{self.request.getpeername()}]  Timeout")
+                self.expecting_data = False
+                return
+
             try:
                 header = RequestMessageHeader(header_byte)
             except ValueError:
@@ -57,8 +63,14 @@ class MessageHandler(StreamRequestHandler):
                 self.session.rollback()
                 self.request.send(write.uchar(ResponseMessageHeader.FAIL))
                 return
+            except TimeoutError:
+                print(f"[{self.request.getpeername()}]  Timeout")
+                self.expecting_data = False
+                return
 
-            print(f"[{self.request.getpeername()}]  Sent response")
+            print(
+                f"[{self.request.getpeername()}]  Sent response: {result!r}"
+            )  # TODO debug mode
             self.request.send(result)
 
         print(f"[{self.request.getpeername()}] Closed connexion")
@@ -105,7 +117,6 @@ class MessageHandler(StreamRequestHandler):
         self.session.refresh(new_user)
 
         self.user = new_user
-        self.expecting_data = False
         return write.uuid(new_user.key_token)
 
     def on_set_username(self) -> bytes:
@@ -239,8 +250,20 @@ class MessageHandler(StreamRequestHandler):
         self.session.commit()
 
         print("  session validated")
+
+        active_contracts = queries.get_contracts(
+            self.session, by__user_identifier=found_user.identifier, by__completed=False
+        )
+
+        # Serialize
+        contract_bytes = bytearray()
+        contract_bytes += write.uchar(len(active_contracts))
+        for contract in active_contracts:
+            serialized_contract = outschemas.GG2OutContract.from_contract(contract)
+            contract_bytes += serialized_contract.to_bytes()
+
         self.expecting_data = False
-        return write.uchar(ResponseMessageHeader.SUCCESS)
+        return write.uchar(ResponseMessageHeader.SUCCESS) + contract_bytes
 
     def on_server_sends_game_data(self) -> bytes:
         if not self.got_hello:

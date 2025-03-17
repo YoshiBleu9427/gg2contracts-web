@@ -1,5 +1,6 @@
 import socket
 import struct
+import time
 from uuid import UUID
 
 
@@ -7,6 +8,7 @@ def _fetch(s: socket.socket, n: int) -> bytes:
     """
     Reads from the given socket until exactly n bytes have been read.
     """
+    i = 0
     need_count = n
     buffer = bytearray()
     while need_count > 0:
@@ -14,6 +16,11 @@ def _fetch(s: socket.socket, n: int) -> bytes:
         this_read_count = len(this_read_buf)
         need_count -= this_read_count
         buffer += this_read_buf
+        i += 1
+        if i > 10:
+            raise TimeoutError
+        if i > 5:
+            time.sleep(0.1 * i)
     return bytes(buffer)
 
 
