@@ -66,6 +66,7 @@ class MessageHandler(StreamRequestHandler):
             except TimeoutError:
                 print(f"[{self.request.getpeername()}]  Timeout")
                 self.expecting_data = False
+                self.session.rollback()
                 return
 
             print(
