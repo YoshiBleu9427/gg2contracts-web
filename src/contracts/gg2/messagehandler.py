@@ -234,16 +234,19 @@ class MessageHandler(StreamRequestHandler):
 
         found_user = queries.get_user(self.session, by__session_token=session_token)
         if not found_user:
+            print("  user not found")
             raise FailedInteraction
 
         found_server = queries.get_game_server(self.session, by__identifier=server_id)
         if not found_server:
+            print("  server not found")
             raise FailedInteraction
 
         if found_user.last_joined_server != server_id:
             found_user.last_joined_server = None
             self.session.add(found_user)
             self.session.commit()
+            print("  user-server match failed")
             raise FailedInteraction
 
         found_user.server_validated_session = True
