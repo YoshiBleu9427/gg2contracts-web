@@ -173,7 +173,7 @@ class MessageHandler(StreamRequestHandler):
 
         # Serialize
         contract_bytes = bytearray()
-        contract_bytes += write.uchar(len(existing_contracts))
+        contract_bytes += write.uchar(len(existing_contracts) + len(new_contracts))
         for contract in existing_contracts:
             self.session.refresh(contract)  # TODO why do I need to do that???
             serialized_contract = outschemas.GG2OutContract.from_contract(contract)
