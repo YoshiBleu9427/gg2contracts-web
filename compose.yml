@@ -1,5 +1,5 @@
 x-common: &common
-  image: haxxy25-bot
+  image: gg2-contracts
   build:
     context: docker
 
