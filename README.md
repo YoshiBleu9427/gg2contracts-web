@@ -27,6 +27,7 @@ mypy src
 
 ### Components
 
+```
 src/
 ├─ alembic/                 DB migrations
 ├─ cli/                     CLI for interacting directly with the backend
@@ -40,6 +41,7 @@ src/
 ├─ main.py                  Runs the main web app
 ├─ run_discord_bot.py       Runs the discord bot
 ├─ run_gg2_backend.py       Runs the gg2 TCP backend
+```
 
 
 ## Deploy
