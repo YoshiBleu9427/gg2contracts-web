@@ -20,6 +20,9 @@ class GameServer(ContractBaseModel, table=True):
         default_factory=uuid4,
         nullable=False,
     )
+    # TODO server name?
+    # TODO creation date
+    # TODO last activity date
 
 
 class User(ContractBaseModel, table=True):
@@ -46,6 +49,8 @@ class User(ContractBaseModel, table=True):
         default=None, index=True, unique=True, nullable=True
     )
     server_validated_session: bool = Field(default=False)
+    # TODO creation date
+    # TODO last activity date
 
 
 class Contract(ContractBaseModel, table=True):
@@ -64,6 +69,8 @@ class Contract(ContractBaseModel, table=True):
 
     user_identifier: UUID = Field(default=None, foreign_key="user.identifier")
     user: "User" = Relationship(back_populates="contracts")
+    # TODO creation date
+    # TODO validate date
 
     def update_value(self, modifier: int):
         was_completed = self.completed

@@ -68,6 +68,12 @@ class MessageHandler(StreamRequestHandler):
                 self.expecting_data = False
                 self.session.rollback()
                 return
+            except BaseException as e:
+                print(f"[{self.request.getpeername()}]  Error: {e}")
+                self.expecting_data = False
+                self.session.rollback()
+                return
+            # TODO probably a better way to handle the exception chain
 
             print(
                 f"[{self.request.getpeername()}]  Sent response: {result!r}"
@@ -274,14 +280,14 @@ class MessageHandler(StreamRequestHandler):
             raise FailedInteraction
 
         server_id = read.uuid(self.request)
+        print(f"  server id {server_id}")
         found_server = queries.get_game_server(self.session, by__identifier=server_id)
         if not found_server:
             raise FailedInteraction
 
-        print(f"  server id {server_id}")
-
         # consume validation token
         server_validation_token = read.uuid(self.request)
+        print(f"  token {server_validation_token}")
         if found_server.validation_token != server_validation_token:
             raise FailedInteraction
 
@@ -378,4 +384,5 @@ REQUEST_MESSAGE_CONTENT_BY_TYPE: dict[
     RequestMessageHeader.REGISTER_SERVER: MessageHandler.on_server_register,
     RequestMessageHeader.SERVER_RECEIVES_CLIENT: MessageHandler.on_server_receives_client,
     RequestMessageHeader.GAME_DATA: MessageHandler.on_server_sends_game_data,
+    # TODO "endpoint" for server to invalidate their previous validation token and request a new one
 }

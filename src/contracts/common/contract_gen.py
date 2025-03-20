@@ -1,10 +1,11 @@
 import random
+
 from contracts.common.enums import ContractType
-from contracts.common.models import Contract, User, GameClass
+from contracts.common.models import Contract, GameClass, User
 
 # TODO test assert all enum options are here
 
-VALUES_BY_TYPE: dict[ContractType: list[int]] = {
+VALUES_BY_TYPE: dict[ContractType, list[int]] = {
     ContractType.DEBUG: [0],
     ContractType.KILLS: [5],
     ContractType.KILLS_AS_CLASS: [3],
@@ -15,7 +16,7 @@ VALUES_BY_TYPE: dict[ContractType: list[int]] = {
     ContractType.ROUNDS_WON: [3],
 }
 
-POINTS_BY_TYPE: dict[ContractType: list[int]] = {
+POINTS_BY_TYPE: dict[ContractType, list[int]] = {
     ContractType.DEBUG: [0],
     ContractType.KILLS: [5],
     ContractType.KILLS_AS_CLASS: [5],
@@ -26,12 +27,13 @@ POINTS_BY_TYPE: dict[ContractType: list[int]] = {
     ContractType.ROUNDS_WON: [3],
 }
 
+
 def _generate_gameclass(for_user: User, contract_type: ContractType) -> GameClass:
     match contract_type:
         case ContractType.KILLS_AS_CLASS:
             return for_user.main_class
         case ContractType.KILLS_ON_CLASS:
-            if random.random() < 0.8:
+            if random.random() < 0.7:
                 return for_user.main_class
             return random.choice(list(GameClass))
         case _:

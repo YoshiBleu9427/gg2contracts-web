@@ -12,6 +12,7 @@ def _fetch(s: socket.socket, n: int) -> bytes:
     need_count = n
     buffer = bytearray()
     while need_count > 0:
+        s.settimeout(3.0)  # TODO setting; needs to be short because db might be locked
         this_read_buf = s.recv(need_count)
         this_read_count = len(this_read_buf)
         need_count -= this_read_count
