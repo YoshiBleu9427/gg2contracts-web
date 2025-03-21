@@ -1,6 +1,7 @@
+from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import TIMESTAMP, Field, Relationship, SQLModel
 
 from contracts.common.enums import ContractType, GameClass
 
@@ -20,9 +21,18 @@ class GameServer(ContractBaseModel, table=True):
         default_factory=uuid4,
         nullable=False,
     )
-    # TODO server name?
-    # TODO creation date
-    # TODO last activity date
+    registered_server_name: str
+    created_at: datetime = Field(
+        default_factory=datetime.now,
+        nullable=False,
+        sa_type=TIMESTAMP(timezone=True),  # type: ignore
+    )
+    last_modified: datetime = Field(
+        default_factory=datetime.now,
+        nullable=False,
+        sa_type=TIMESTAMP(timezone=True),  # type: ignore
+        sa_column_kwargs={"onupdate": lambda: datetime.now()},
+    )
 
 
 class User(ContractBaseModel, table=True):
@@ -49,8 +59,17 @@ class User(ContractBaseModel, table=True):
         default=None, index=True, unique=True, nullable=True
     )
     server_validated_session: bool = Field(default=False)
-    # TODO creation date
-    # TODO last activity date
+    created_at: datetime = Field(
+        default_factory=datetime.now,
+        nullable=False,
+        sa_type=TIMESTAMP(timezone=True),  # type: ignore
+    )
+    last_modified: datetime = Field(
+        default_factory=datetime.now,
+        nullable=False,
+        sa_type=TIMESTAMP(timezone=True),  # type: ignore
+        sa_column_kwargs={"onupdate": lambda: datetime.now()},
+    )
 
 
 class Contract(ContractBaseModel, table=True):
@@ -69,8 +88,22 @@ class Contract(ContractBaseModel, table=True):
 
     user_identifier: UUID = Field(default=None, foreign_key="user.identifier")
     user: "User" = Relationship(back_populates="contracts")
-    # TODO creation date
-    # TODO validate date
+
+    validated_by_identifier: UUID | None = Field(
+        default=None, foreign_key="gameserver.identifier", nullable=True
+    )
+
+    created_at: datetime = Field(
+        default_factory=datetime.now,
+        nullable=False,
+        sa_type=TIMESTAMP(timezone=True),  # type: ignore
+    )
+    last_modified: datetime = Field(
+        default_factory=datetime.now,
+        nullable=False,
+        sa_type=TIMESTAMP(timezone=True),  # type: ignore
+        sa_column_kwargs={"onupdate": lambda: datetime.now()},
+    )
 
     def update_value(self, modifier: int):
         was_completed = self.completed

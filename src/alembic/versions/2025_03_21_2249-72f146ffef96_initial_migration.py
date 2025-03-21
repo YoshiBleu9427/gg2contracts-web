@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: 4f1796f4d2b9
+Revision ID: 72f146ffef96
 Revises:
-Create Date: 2025-03-11 20:40:52.683470
+Create Date: 2025-03-21 22:49:28.258765
 
 """
 
@@ -14,7 +14,7 @@ import sqlmodel
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "4f1796f4d2b9"
+revision: str = "72f146ffef96"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -27,6 +27,16 @@ def upgrade() -> None:
         "gameserver",
         sa.Column("identifier", sa.Uuid(), nullable=False),
         sa.Column("validation_token", sa.Uuid(), nullable=False),
+        sa.Column(
+            "registered_server_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False
+        ),
+        sa.Column("created_at", sa.TIMESTAMP(timezone=True), nullable=False),
+        sa.Column(
+            "last_modified",
+            sa.TIMESTAMP(timezone=True),
+            nullable=False,
+            onupdate=lambda: sa.TIMESTAMP(timezone=True),
+        ),
         sa.PrimaryKeyConstraint("identifier"),
     )
     op.create_index(
@@ -58,6 +68,13 @@ def upgrade() -> None:
         sa.Column("last_joined_server", sa.Uuid(), nullable=True),
         sa.Column("session_token", sa.Uuid(), nullable=True),
         sa.Column("server_validated_session", sa.Boolean(), nullable=False),
+        sa.Column("created_at", sa.TIMESTAMP(timezone=True), nullable=False),
+        sa.Column(
+            "last_modified",
+            sa.TIMESTAMP(timezone=True),
+            nullable=False,
+            onupdate=lambda: sa.TIMESTAMP(timezone=True),
+        ),
         sa.ForeignKeyConstraint(
             ["last_joined_server"],
             ["gameserver.identifier"],
@@ -109,9 +126,21 @@ def upgrade() -> None:
         sa.Column("completed", sa.Boolean(), nullable=False),
         sa.Column("points", sa.Integer(), nullable=False),
         sa.Column("user_identifier", sa.Uuid(), nullable=False),
+        sa.Column("validated_by_identifier", sa.Uuid(), nullable=True),
+        sa.Column("created_at", sa.TIMESTAMP(timezone=True), nullable=False),
+        sa.Column(
+            "last_modified",
+            sa.TIMESTAMP(timezone=True),
+            nullable=False,
+            onupdate=lambda: sa.TIMESTAMP(timezone=True),
+        ),
         sa.ForeignKeyConstraint(
             ["user_identifier"],
             ["user.identifier"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["validated_by_identifier"],
+            ["gameserver.identifier"],
         ),
         sa.PrimaryKeyConstraint("identifier"),
     )

@@ -217,7 +217,9 @@ class MessageHandler(StreamRequestHandler):
         if not self.got_hello:
             raise FailedInteraction
 
-        new_server = GameServer()
+        given_name = read.short_string(self.request)
+
+        new_server = GameServer(registered_server_name=given_name)
         self.session.add(new_server)
         self.session.commit()
         self.session.refresh(new_server)
@@ -329,6 +331,7 @@ class MessageHandler(StreamRequestHandler):
                 contract = user_contracts_by_id[con_data.contract_id]
                 contract.update_value(con_data.value_modifier)
                 if contract.completed:
+                    contract.validated_by_identifier = server_id
                     completed_ids.append(contract.identifier)
                     new_contract = generate_contract(user)
                     self.session.add(new_contract)
