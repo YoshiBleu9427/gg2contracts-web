@@ -72,7 +72,8 @@ class MessageHandler(StreamRequestHandler):
                 print(f"[{self.request.getpeername()}]  Error: {e}")
                 self.expecting_data = False
                 self.session.rollback()
-                return
+                self.request.close()
+                raise e
             # TODO probably a better way to handle the exception chain
 
             print(
@@ -348,6 +349,8 @@ class MessageHandler(StreamRequestHandler):
                 }
             )
 
+        # TODO see if this can be moved to the bottom, so that the validation
+        # token isnt overwritten if something goes wrong here
         self.session.commit()
 
         update_data: list[outschemas.GG2OutContractUpdateData] = []

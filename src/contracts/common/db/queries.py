@@ -27,6 +27,7 @@ def get_user(
     by__identifier: UUID | None = None,
     by__key_token: UUID | None = None,
     by__session_token: UUID | None = None,
+    by__username: str | None = None,
 ) -> User | None:
     query = select(User)
 
@@ -38,6 +39,9 @@ def get_user(
 
     if by__session_token:
         query = query.where(User.session_token == by__session_token)
+
+    if by__username:
+        query = query.where(User.username == by__username)
 
     return session.exec(query).one_or_none()
 

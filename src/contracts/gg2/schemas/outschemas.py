@@ -2,6 +2,7 @@ from typing import Self
 from uuid import UUID
 
 from pydantic import BaseModel
+from pydantic.fields import Field
 
 from contracts.common.enums import ContractType, GameClass
 from contracts.common.models import Contract
@@ -12,10 +13,10 @@ from contracts.gg2.schemas.base import GG2Serializable
 class GG2OutContract(BaseModel, GG2Serializable):
     identifier: UUID
     contract_type: ContractType
-    value: int
-    target_value: int
+    value: int = Field(ge=0, lt=256)
+    target_value: int = Field(ge=0, lt=256)
     game_class: GameClass
-    points: int
+    points: int = Field(ge=0, lt=256)
 
     @classmethod
     def from_contract(cls, contract: Contract) -> Self:
@@ -35,9 +36,9 @@ class GG2OutContract(BaseModel, GG2Serializable):
 class GG2OutNewContract(BaseModel, GG2Serializable):
     identifier: UUID
     contract_type: ContractType
-    target_value: int
+    target_value: int = Field(ge=0, lt=256)
     game_class: GameClass
-    points: int
+    points: int = Field(ge=0, lt=256)
 
     @classmethod
     def from_contract(cls, contract: Contract) -> Self:

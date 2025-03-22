@@ -2,6 +2,7 @@ import socket
 from uuid import UUID
 
 from pydantic import BaseModel
+from pydantic.fields import Field
 
 from contracts.gg2.network import read
 from contracts.gg2.schemas.base import GG2Deserializable
@@ -9,7 +10,7 @@ from contracts.gg2.schemas.base import GG2Deserializable
 
 class InPlayerContractUpdate(BaseModel, GG2Deserializable):
     contract_id: UUID
-    value_modifier: int
+    value_modifier: int = Field(ge=0, lt=256)
 
     @classmethod
     def from_bytes(cls, s: socket.socket):

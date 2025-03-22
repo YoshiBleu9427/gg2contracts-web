@@ -80,8 +80,8 @@ class Contract(ContractBaseModel, table=True):
         nullable=False,
     )
     contract_type: ContractType
-    value: int
-    target_value: int
+    value: int = Field(ge=0)
+    target_value: int = Field(ge=0, lt=256)
     game_class: GameClass
     completed: bool = Field(default=False)
     points: int
