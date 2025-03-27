@@ -9,6 +9,19 @@ class ContractType(IntEnum):
     UBERS = 5
     ROUNDS_PLAYED = 6
     ROUNDS_WON = 7
+    DOMINATIONS = 8
+    CAPTURES = 9
+    STABS = 10
+    BURN_DURATION = 11
+    AUTOGUN_KILLS = 12
+    UBERED_KILLS = 13
+    DAMAGE_TAKEN = 14
+    KILL_STREAK = 15
+    HEAL_STREAK = 16
+    AUTOGUN_STREAK = 17
+    FLARE_KILLS = 18
+    GUN_KILLS = 19
+    UBERED_STREAK = 20
 
     DEBUG = 69
 

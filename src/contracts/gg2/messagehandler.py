@@ -7,6 +7,7 @@ from contracts.common.contract_gen import generate_contract
 from contracts.common.db import queries
 from contracts.common.db.engine import get_session
 from contracts.common.models import Contract, GameServer, User
+from contracts.common.settings import settings
 from contracts.gg2.network import read, write
 from contracts.gg2.network.constants import (
     MAGIC_HELLO,
@@ -168,11 +169,14 @@ class MessageHandler(StreamRequestHandler):
         existing_contracts = queries.get_contracts(
             self.session, by__user_identifier=self.user.identifier, by__completed=False
         )
+        existing_contracts_as_list = list(existing_contracts)
 
-        to_create_count = 3 - len(existing_contracts)  # TODO settings
+        to_create_count = settings.active_contracts_per_user - len(existing_contracts)
         new_contracts: list[Contract] = []
         for _ in range(to_create_count):
-            new_contract = generate_contract(self.user)
+            new_contract = generate_contract(
+                self.user, existing_contracts_as_list + new_contracts
+            )
             self.session.add(new_contract)
             new_contracts.append(new_contract)
 
@@ -324,6 +328,7 @@ class MessageHandler(StreamRequestHandler):
                 continue
 
             user_contracts_by_id = {con.identifier: con for con in user.contracts}
+            user_active_contracts = [con for con in user.contracts if not con.completed]
             print(f"    user {user.identifier} has {len(user.contracts)}")
 
             completed_ids: list[UUID] = []
@@ -332,11 +337,17 @@ class MessageHandler(StreamRequestHandler):
                 contract = user_contracts_by_id[con_data.contract_id]
                 contract.update_value(con_data.value_modifier)
                 if contract.completed:
+                    user_active_contracts.remove(contract)
+
                     contract.validated_by_identifier = server_id
                     completed_ids.append(contract.identifier)
-                    new_contract = generate_contract(user)
+
+                    new_contract = generate_contract(user, user_active_contracts)
+
                     self.session.add(new_contract)
+
                     new_contracts.append(new_contract)
+                    user_active_contracts.append(new_contract)
 
             print(f"    generated {len(new_contracts)} new contracts")
 
