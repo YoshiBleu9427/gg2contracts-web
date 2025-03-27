@@ -58,6 +58,18 @@ def get_game_server(
     return session.exec(query).one_or_none()
 
 
+def get_contract(
+    session: Session,
+    by__identifier: UUID | None = None,
+) -> Contract | None:
+    query = select(Contract)
+
+    if by__identifier:
+        query = query.where(Contract.identifier == by__identifier)
+
+    return session.exec(query).one_or_none()
+
+
 def get_contracts(
     session: Session,
     by__user_identifier: UUID | None = None,
