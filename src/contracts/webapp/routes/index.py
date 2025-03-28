@@ -22,3 +22,10 @@ def users_page(request: Request, session: SessionDep):
     context = {"request": request, "users": db_users}
     response = templates.TemplateResponse("users.html", context)
     return response
+
+
+@router.get("/me", response_class=HTMLResponse)
+def me_page(request: Request):
+    context = {"request": request}
+    response = templates.TemplateResponse("updateme.html", context)
+    return response

@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <title>Yay</title>
+        <link rel="stylesheet" href="/static/css/style.css" />
+        <script>
+            window.addEventListener("load", () => {
+                document.getElementById("myform").addEventListener("submit", (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    
+                    fetch(`/api/users/${formData.get("key")}`, {
+                        method: "post",
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            "username": formData.get("username"),
+                            "main_class": formData.get("main_class"),
+                        })
+                    })
+                    .then( (response) => { 
+                        console.log(response);
+                        let respText;
+                        if (response.status < 300) respText = "Success!"
+                        else respText = "Failure"
+                        document.getElementById("message").textContent = respText
+                    });
+                });
+            })
+        </script>
+    </head>
+    <body>
+        <h1>Update self</h1>
+        <h2 id="message"></h2>
+        <form id="myform" method="post" action="/me/update">
+            Login key: <input name="key" placeholder="123456789012-1234-1234-1234-12345678" /><br/>
+            Username: <input name="username" placeholder="username" /><br/>
+            Mainclass: <select name="main_class">
+                <option value=0>RUNNER</option>
+                <option value=8>FIREBUG</option>
+                <option value=1>ROCKETMAN</option>
+                <option value=6>OVERWEIGHT</option>
+                <option value=3>DETONATOR</option>
+                <option value=4>HEALER</option>
+                <option value=5>CONSTRUCTOR</option>
+                <option value=2>RIFLEMAN</option>
+                <option value=7>INFILTRATOR</option>
+                <option value=9>QUOTE</option>
+            </select><br/>
+            <button type="submit">Submit</button>
+        </form>
+    </body>
+</html>
