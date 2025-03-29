@@ -36,51 +36,54 @@ class MessageHandler(StreamRequestHandler):
     def handle(self) -> None:
         print(f"[{self.request.getpeername()}] New connexion")
 
-        while self.expecting_data:
-            print(f"[{self.request.getpeername()}]  Awaiting header")
-            try:
-                header_byte = read.uchar(self.request)
-            except TimeoutError:
-                print(f"[{self.request.getpeername()}]  Timeout")
-                self.expecting_data = False
-                return
+        try:
+            while self.expecting_data:
+                print(f"[{self.request.getpeername()}]  Awaiting header")
+                try:
+                    header_byte = read.uchar(self.request)
+                except TimeoutError:
+                    print(f"[{self.request.getpeername()}]  Timeout")
+                    self.expecting_data = False
+                    return
 
-            try:
-                header = RequestMessageHeader(header_byte)
-            except ValueError:
-                print(f"[{self.request.getpeername()}]  Bad header {header_byte}")
-                self.expecting_data = False
-                self.request.send(write.uchar(ResponseMessageHeader.FAIL))
-                return
+                try:
+                    header = RequestMessageHeader(header_byte)
+                except ValueError:
+                    print(f"[{self.request.getpeername()}]  Bad header {header_byte}")
+                    self.expecting_data = False
+                    self.request.send(write.uchar(ResponseMessageHeader.FAIL))
+                    return
 
-            func = REQUEST_MESSAGE_CONTENT_BY_TYPE[header]
-            print(f"[{self.request.getpeername()}]  {func.__name__}")
+                func = REQUEST_MESSAGE_CONTENT_BY_TYPE[header]
+                print(f"[{self.request.getpeername()}]  {func.__name__}")
 
-            try:
-                result = func(self)
-            except FailedInteraction:
-                print(f"[{self.request.getpeername()}]  FailedInteraction {header}")
-                self.expecting_data = False
-                self.session.rollback()
-                self.request.send(write.uchar(ResponseMessageHeader.FAIL))
-                return
-            except TimeoutError:
-                print(f"[{self.request.getpeername()}]  Timeout")
-                self.expecting_data = False
-                self.session.rollback()
-                return
-            except BaseException as e:
-                print(f"[{self.request.getpeername()}]  Error: {e}")
-                self.expecting_data = False
-                self.session.rollback()
-                self.request.close()
-                raise e
-            # TODO probably a better way to handle the exception chain
+                try:
+                    result = func(self)
+                except FailedInteraction:
+                    print(f"[{self.request.getpeername()}]  FailedInteraction {header}")
+                    self.expecting_data = False
+                    self.session.rollback()
+                    self.request.send(write.uchar(ResponseMessageHeader.FAIL))
+                    return
+                except TimeoutError:
+                    print(f"[{self.request.getpeername()}]  Timeout")
+                    self.expecting_data = False
+                    self.session.rollback()
+                    return
+                except BaseException as e:
+                    print(f"[{self.request.getpeername()}]  Error: {e}")
+                    self.expecting_data = False
+                    self.session.rollback()
+                    self.request.close()
+                    raise e
+                # TODO probably a better way to handle the exception chain
 
-            print(
-                f"[{self.request.getpeername()}]  Sent response: {result!r}"
-            )  # TODO debug mode
-            self.request.send(result)
+                print(
+                    f"[{self.request.getpeername()}]  Sent response: {result!r}"
+                )  # TODO debug mode
+                self.request.send(result)
+        finally:
+            self.session.close()
 
         print(f"[{self.request.getpeername()}] Closed connexion")
 
