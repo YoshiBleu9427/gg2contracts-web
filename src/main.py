@@ -1,5 +1,12 @@
 if __name__ == "__main__":
     import uvicorn
 
+    from contracts.common.settings import settings
+
     # TODO log config
-    uvicorn.run("contracts.webapp.app:app", host="0.0.0.0", port=8080, reload=True)
+    uvicorn.run(
+        "contracts.webapp.app:app",
+        host=settings.webapp_host,
+        port=settings.webapp_port,
+        reload=True,
+    )
