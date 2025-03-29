@@ -3,8 +3,13 @@
         <title>Yay</title>
         <link rel="stylesheet" href="/static/css/style.css" />
         <script>
-            window.addEventListener("load", () => {
-                document.getElementById("myform").addEventListener("submit", (e) => {
+            window.addEventListener("load", function () {
+                const givenKey = window.location.hash.substring(1);
+                document.getElementById("userkey").setAttribute("value", givenKey);
+                if (givenKey.length > 16) {
+                    document.getElementById("userkey").setAttribute("disabled", true);
+                }
+                document.getElementById("myform").addEventListener("submit", function (e) {
                     e.preventDefault();
                     const formData = new FormData(e.target);
                     
@@ -34,7 +39,7 @@
         <h1>Update self</h1>
         <h2 id="message"></h2>
         <form id="myform" method="post" action="/me/update">
-            Login key: <input name="key" placeholder="123456789012-1234-1234-1234-12345678" /><br/>
+            Login key: <input id="userkey" name="key" placeholder="123456789012-1234-1234-1234-12345678" /><br/>
             Username: <input name="username" placeholder="username" /><br/>
             Mainclass: <select name="main_class">
                 <option value=0>RUNNER</option>
