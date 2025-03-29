@@ -5,3 +5,7 @@ h1 {
 table, tr, td {
     border: solid 1px;
 }
+
+footer {
+    margin-bottom: 0;
+}

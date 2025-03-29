@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}GG2 Contracts{% endblock %}</title>
+    
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='assets/favicon.png') }}">
+    
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+    
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    
+    {% block meta %}
+    <meta property="og:title" content="GG2 Contracts">
+    <meta property="og:description" content="{% block meta_description %}The website for Gang Garrison 2: Contracts plugin.
+    
+    Check how many points you got! Compare with your friends! Choose your preferred contract class!{% endblock %}">
+    <meta property="og:image" content="{% block meta_image %}{{ url_for('static', path='assets/favicon.png') }}{% endblock %}">
+    <meta name="theme-color" content="#626200">
+    {% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <header>
+        {% include "components/navbar.html" %}
+        {% block header %}{% endblock %}
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        {% include "components/footer.html" %}
+        {% block footer %}{% endblock %}
+    </footer>
+
+    <script src="{{ url_for('static', path='js/main.js') }}" defer></script>
+    {% block extra_js %}{% endblock %}
+
+    <!-- CSRF Protection -->
+    {% if csrf_token %}
+    <script>
+        const csrfToken = '{{ csrf_token }}';
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('form').forEach(form => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'csrf_token';
+                input.value = csrfToken;
+                form.appendChild(input);
+            });
+        });
+    </script>
+    {% endif %}
+</body>
+</html>
