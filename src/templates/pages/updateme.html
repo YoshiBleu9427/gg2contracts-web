@@ -1,15 +1,23 @@
 {% extends "base.html" %}
 
 {% block title %}
-    GG2 Contracts - Update self
+    GG2 Contracts - Profile
 {% endblock %}
 
 {% block content %}
-<h1>Update self</h1>
+<h1>Update your profile</h1>
+<p>
+    Update your profile using your user key. <br/>
+    You can find your contracts user key in your <code>gg2.ini</code> .<br/>
+    If you reached this page through the plugin menu in game, your user key is already filled in!
+</p>
+<p>
+    If you don't have one, sign up by playing on a server that runs the contracts plugin!
+</p>
 <h2 id="message"></h2>
-<form id="myform" method="post" action="/me/update">
-    Login key: <input id="userkey" name="key" placeholder="123456789012-1234-1234-1234-12345678" /><br/>
-    Username: <input name="username" placeholder="username" /><br/>
+<form id="myform">
+    Login key: <input id="userkey" name="key" placeholder="123456789012-1234-1234-1234-12345678" /> (find it in your gg2.ini after playing a game with contracts) <br/>
+    Username: <input name="username" placeholder="username" /> (this will not be displayed in-game and will help us find you to give out your rewards when the contest ends)<br/>
     Mainclass: <select name="main_class">
         <option value=0>RUNNER</option>
         <option value=8>FIREBUG</option>
@@ -21,7 +29,7 @@
         <option value=2>RIFLEMAN</option>
         <option value=7>INFILTRATOR</option>
         <option value=9>QUOTE</option>
-    </select><br/>
+    </select> (you will get more contracts for your chosen class) <br/>
     <button type="submit">Submit</button>
 </form>
 {% endblock %}
@@ -35,11 +43,18 @@
             e.preventDefault();
             const formData = new FormData(e.target);
 
-            console.log(formData);
-            console.log(document.getElementById("userkey").getAttribute("value"));
-            console.log(window.location.hash.substring(1));
+            const formKey = formData.get("key");
+            if (formKey.length < 16) {
+                document.getElementById("message").textContent = "Invalid key"
+                return;
+            }
+            if (formData.get("username").length < 2) {
+                document.getElementById("message").textContent = "Name too short"
+                return;
+            }
             
-            fetch(`/api/users/${formData.get("key")}`, {
+            document.getElementById("message").textContent = "Sending..."
+            fetch(`/api/users/${formKey}`, {
                 method: "post",
                 headers: {
                     'Accept': 'application/json',
@@ -51,10 +66,9 @@
                 })
             })
             .then( (response) => { 
-                console.log(response);
                 let respText;
                 if (response.status < 300) respText = "Success!"
-                else respText = "Failure"
+                else respText = `Failure (${response.status})`
                 document.getElementById("message").textContent = respText
             });
         });

@@ -6,27 +6,115 @@
 
 {% block content %}
 <h1>All users!</h1>
-<table>
-    <thead>
-        <th>Name</th>
-        <th>Class</th>
-        <th>Points</th>
-    </thead>
-    <tbody>
-        {% for user in users %}
-        <tr>
-            <td>{{ user.username }}</td>
-            <td>{{ user.main_class }}</td>
-            <td>{{ user.points }}</td>
-            <td><button onclick="showContracts(this)" data-user-id="{{user.identifier}}">Contracts</button></td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div style="display: flex;">
+    <div>
+        Users
+        <table>
+            <thead>
+                <th>Name</th>
+                <th>Class</th>
+                <th>Points</th>
+                <th>Contracts</th>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td class="usermainclass">{{ user.main_class }}</td>
+                    <td>{{ user.points }}</td>
+                    <td><button onclick="showContracts(this)" data-user-id="{{user.identifier}}">Contracts</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <span style="width: 4em;"></span>
+    <div>
+        Contracts
+        <table>
+            <thead>
+                <th>Type</th>
+                <th>Class</th>
+                <th>Progress</th>
+                <th>Created</th>
+                <th>Updated</th>
+            </thead>
+            <tbody id="contractsBody">
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+    const typeToName = {
+        1: "KILLS",
+        2: "KILLS_ON_CLASS",
+        3: "KILLS_AS_CLASS",
+        4: "HEALING",
+        5: "UBERS",
+        6: "ROUNDS_PLAYED",
+        7: "ROUNDS_WON",
+        8: "DOMINATIONS",
+        9: "CAPTURES",
+        10: "STABS",
+        11: "BURN_DURATION",
+        12: "AUTOGUN_KILLS",
+        13: "UBERED_KILLS",
+        14: "DAMAGE_TAKEN",
+        15: "KILL_STREAK",
+        16: "HEAL_STREAK",
+        17: "AUTOGUN_STREAK",
+        18: "FLARE_KILLS",
+        19: "GUN_KILLS",
+        20: "UBERED_STREAK",
+    }
+    const classToName = {
+        0: "RUNNER",
+        8: "FIREBUG",
+        1: "ROCKETMAN",
+        6: "OVERWEIGHT",
+        3: "DETONATOR",
+        4: "HEALER",
+        5: "CONSTRUCTOR",
+        2: "RIFLEMAN",
+        7: "INFILTRATOR",
+        9: "QUOTE",
+    }
+    const contractToLine = (contract) => {
+        const tr = document.createElement("tr");
+
+        const tdcontract_type = document.createElement("td");
+        tdcontract_type.textContent = typeToName[contract.contract_type];
+        tr.appendChild(tdcontract_type);
+
+        const tdgame_class = document.createElement("td");
+        tdgame_class.textContent = classToName[contract.game_class];
+        tr.appendChild(tdgame_class);
+
+        const tdvalue = document.createElement("td");
+        if (contract.completed) {
+            tdvalue.textContent = "✅Done"
+        } else {
+            const valueMeter = document.createElement("meter");
+            valueMeter.setAttribute("value", contract.value);
+            valueMeter.setAttribute("min", 0);
+            valueMeter.setAttribute("max", contract.target_value);
+            tdvalue.textContent = `${contract.value}/${contract.target_value} `
+            tdvalue.appendChild(valueMeter);
+        }
+        tr.appendChild(tdvalue);
+
+        const tdcreated_at = document.createElement("td");
+        tdcreated_at.textContent = new Date(contract.created_at).toLocaleString();
+        tr.appendChild(tdcreated_at);
+
+        const tdlast_modified = document.createElement("td");
+        tdlast_modified.textContent = new Date(contract.last_modified).toLocaleString();
+        tr.appendChild(tdlast_modified);
+        return tr;
+    }
     const showContracts = (target) => {
         const userId = target.getAttribute("data-user-id");
         fetch(`/api/users/${userId}`, {
@@ -38,8 +126,22 @@
         }).then(async (response) => {
             const resp = await response.json();
             console.log(resp);
-            alert(JSON.stringify(resp.contracts));
+
+            const contractsBody = document.getElementById("contractsBody");
+            while (contractsBody.firstChild) {
+                contractsBody.firstChild.remove();
+            }
+
+            resp.contracts.forEach(contract => {
+                contractsBody.appendChild(contractToLine(contract));
+            });
         })
     }
+    window.addEventListener("load", () => {
+        const collection = document.getElementsByClassName("usermainclass");
+        for (let i = 0; i < collection.length; i++) {
+            collection[i].textContent = classToName[collection[i].textContent];
+        }
+    })
 </script>
 {% endblock %}

@@ -11,7 +11,7 @@ router = APIRouter()
 
 @router.get("/", response_class=HTMLResponse)
 def index_page(request: Request):
-    context = {"request": request, "extra_text": "Injected value"}
+    context = {"request": request}
     response = templates.TemplateResponse("pages/index.html", context)
     return response
 

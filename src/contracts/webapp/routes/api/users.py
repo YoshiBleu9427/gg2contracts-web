@@ -60,6 +60,7 @@ def get_user(session: SessionDep, identifier: str):
 
 @router.post("/")
 def create_user(schema: InUserSchema, session: SessionDep) -> OutUserSchema:
+    time.sleep(1)  # totally super secure B)
     new_user = User(username=schema.username, main_class=schema.main_class)
     session.add(new_user)
     session.commit()

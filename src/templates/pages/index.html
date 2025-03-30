@@ -5,11 +5,72 @@
 {% endblock %}
 
 {% block content %}
-<h1>Wow! It works!</h1>
+<h1>Welcome to Contracts!</h1>
 <p>
-    Sample text!
+    This is the website for the gg2 contracts plugin!
+    You can find the source code for the plugin on <a href="https://github.com/YoshiBleu9427/gg2contracts-plugin">Github</a>.
 </p>
-<p>
-    {{ extra_text }}
-</p>
+<div style="display: flex; justify-content: space-around;">
+    <div>
+        <h2>What's this?</h2>
+        <div style="display: flex; justify-content: space-between;">
+            <p>
+                Like most Gang Garrison things, GG2 Contracts are largely inspired from their original TF2 counterpart.
+                You complete missions, some easy some hard, and earn points based on how difficult they are.
+                <br/>
+                <br/>
+                The plugin keeps track of your results, and sends the data to this website,
+                which grants you points depending on how many contracts you complete!
+                <br/>
+                Collect a bunch of points that way, and you just might earn yourself a <a href="https://www.ganggarrison.com/haxxy2025/">special reward</a>!
+                <br/>
+                <br/>
+                There are more than 20 types of contracts! Kill enemies, set them on fire, capture objectives, heal your allies without dying...
+            </p>
+            <p>
+                <img src="{{ url_for('static', path='assets/pauling.png') }}" />
+            </p>
+        </div>
+        <h2>How do I join?</h2>
+        <p>
+            Find a game server that runs the contracts plugin (or host one yourself!).
+            You will be greeted with a (basic) sign up form:<br/>
+            <img src="{{ url_for('static', path='assets/screen_join.jpg') }}" />
+            <br/>
+            After clicking "Yes", an account will automatically be created for you. From there, you can just play the game!
+            <br/>
+            <br/>
+            When your account is created, you are given a login key (or user key), which is saved in your <code>gg2.ini</code> .
+            <br/>
+            If you want to log into the same account from a different computer, just copy over the entire file;
+            or if you want to be specific, copy the <code>user_key</code> under <code>[Contracts]</code> .
+            <br/>
+            <img src="{{ url_for('static', path='assets/screen_gg2ini.jpg') }}" />
+            <br/>
+            <br/>
+            When joining a server, you will be given a list of contracts to fulfill. You can find them in the Contracts menu, from the in-game menu.
+        </p>
+        <h2>How do I see my progress?</h2>
+        <p>
+            In the game menu, you can see all your current contracts, how many points they're worth, and how close you are to completing them.
+        </p>
+        <p>
+            You can find your total points, as well as everyone else's, in the general table on the <a href="/users">users</a> page.
+        </p>
+        <h2>How do I get new contracts?</h2>
+        <p>
+            Contracts are completed when a map ends.<br/>
+            When you complete a contract, it is immediately replaced with a new random contract.<br/>
+        </p>
+        <p>
+            You cannot choose what contracts you get, but you can choose a main class for your account.<br/>
+            This will make it more likely that your new generated contracts will have to do with the class you've chosen!<br/>
+            Your default main class will be the Rocketman, but you can change it anytime by going to your <a href="/me">profile page</a>,
+            which you can also access with a link in the Contracts menu in game.<br/>
+        </p>
+    </div>
+    <div>
+        <img height="320px" src="{{ url_for('static', path='assets/screen_game.jpg') }}" />
+    </div>
+</div>
 {% endblock %}
