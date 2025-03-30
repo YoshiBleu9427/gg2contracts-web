@@ -21,7 +21,7 @@ RARE_CONTRACTS: dict[ContractType, list[tuple[int, int]]] = {
 CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
     GameClass.RUNNER: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
-        ContractType.CAPTURES: [(5, 15), (30, 150)],
+        ContractType.CAPTURES: [(5, 20), (30, 150)],
     },
     GameClass.FIREBUG: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
@@ -40,7 +40,7 @@ CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
     },
     GameClass.DETONATOR: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
-        ContractType.CAPTURES: [(5, 15), (30, 150)],
+        ContractType.CAPTURES: [(5, 20), (30, 150)],
     },
     GameClass.HEALER: {
         ContractType.HEALING: [(3, 6), (5, 12), (7, 18), (20, 55)],
@@ -59,7 +59,7 @@ CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
     GameClass.INFILTRATOR: {
         ContractType.STABS: [(2, 10), (3, 15), (5, 25)],
         ContractType.GUN_KILLS: [(2, 10), (5, 25), (10, 60)],
-        ContractType.CAPTURES: [(5, 15), (30, 150)],
+        ContractType.CAPTURES: [(3, 12), (5, 20)],
     },
     GameClass.QUOTE: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 15), (10, 30)],
