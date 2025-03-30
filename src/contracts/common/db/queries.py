@@ -1,7 +1,7 @@
 from typing import Sequence
 from uuid import UUID
 
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from contracts.common.models import Contract, GameServer, User
 
@@ -10,6 +10,7 @@ def get_users(
     session: Session,
     by__server_id: UUID | None = None,
     by__server_validated: bool | None = None,
+    by__username: str | None = None,
 ) -> Sequence[User]:
     query = select(User)
 
@@ -18,6 +19,9 @@ def get_users(
 
     if by__server_validated is not None:
         query = query.where(User.server_validated_session == by__server_validated)
+
+    if by__username is not None:
+        query = query.where(col(User.username).contains(by__username))
 
     return session.exec(query).all()
 
