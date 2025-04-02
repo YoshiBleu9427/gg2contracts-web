@@ -46,7 +46,7 @@ CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
     GameClass.HEALER: {
         ContractType.HEALING: [(3, 6), (5, 12), (7, 18), (20, 55)],
         ContractType.UBERS: [(2, 6), (5, 15)],
-        ContractType.HEAL_STREAK: [(3, 6), (7, 25), (10, 50), (20, 200)],
+        ContractType.HEAL_STREAK: [(1, 6), (3, 25), (5, 50), (6, 100)],
         ContractType.UBERED_KILLS: [(3, 10), (10, 40), (20, 90)],
         ContractType.UBERED_STREAK: [(2, 15), (3, 25)],
     },
