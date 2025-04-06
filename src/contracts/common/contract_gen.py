@@ -6,22 +6,21 @@ from contracts.common.models import Contract, GameClass, User
 # TODO test assert all enum options are here
 
 COMMON_CONTRACTS: dict[ContractType, list[tuple[int, int]]] = {
-    ContractType.KILLS: [(5, 10), (15, 35), (25, 60)],
-    ContractType.ROUNDS_PLAYED: [(2, 2), (3, 4), (5, 7)],
-    ContractType.ROUNDS_WON: [(1, 4), (2, 10), (3, 16)],
-    ContractType.CAPTURES: [(3, 10), (7, 25), (12, 50)],
+    ContractType.KILLS: [(5, 12), (15, 40), (25, 75)],
+    ContractType.ROUNDS_PLAYED: [(2, 5), (3, 10), (5, 16)],
+    ContractType.ROUNDS_WON: [(1, 5), (2, 11), (3, 18)],
+    ContractType.CAPTURES: [(3, 12), (7, 30), (12, 60)],
 }
 RARE_CONTRACTS: dict[ContractType, list[tuple[int, int]]] = {
-    ContractType.KILLS_ON_CLASS: [(2, 8), (4, 16), (6, 24)],
-    ContractType.DOMINATIONS: [(2, 10), (3, 16), (5, 30)],
+    ContractType.KILLS_ON_CLASS: [(2, 8), (4, 18), (6, 30)],
+    ContractType.DOMINATIONS: [(2, 20), (3, 35), (5, 60)],
     ContractType.UBERED_KILLS: [(3, 10), (10, 40)],
-    ContractType.KILL_STREAK: [(5, 15), (7, 30), (10, 50)],
-    ContractType.UBERED_STREAK: [(2, 15), (3, 25)],
+    ContractType.KILL_STREAK: [(3, 15), (5, 30), (7, 50)],
 }
 CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
     GameClass.RUNNER: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
-        ContractType.CAPTURES: [(5, 20), (30, 150)],
+        ContractType.CAPTURES: [(3, 12), (5, 20), (7, 30), (12, 60)],
     },
     GameClass.FIREBUG: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
@@ -40,19 +39,19 @@ CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
     },
     GameClass.DETONATOR: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
-        ContractType.CAPTURES: [(5, 20), (30, 150)],
-        ContractType.KILL_STREAK: [(3, 10), (5, 15), (7, 30)],
+        ContractType.CAPTURES: [(3, 15), (10, 50)],
+        ContractType.KILL_STREAK: [(3, 15), (5, 30), (7, 50)],
     },
     GameClass.HEALER: {
-        ContractType.HEALING: [(3, 6), (5, 12), (7, 18), (20, 55)],
+        ContractType.HEALING: [(12, 6), (18, 12), (25, 18), (100, 70)],
         ContractType.UBERS: [(2, 6), (5, 15)],
-        ContractType.HEAL_STREAK: [(1, 6), (3, 25), (5, 50), (6, 100)],
-        ContractType.UBERED_KILLS: [(3, 10), (10, 40), (20, 90)],
-        ContractType.UBERED_STREAK: [(2, 15), (3, 25)],
+        ContractType.HEAL_STREAK: [(6, 6), (10, 18), (15, 40), (20, 80)],
+        ContractType.UBERED_KILLS: [(3, 15), (10, 55), (20, 130)],
+        ContractType.UBERED_STREAK: [(2, 15), (3, 45)],
     },
     GameClass.CONSTRUCTOR: {
-        ContractType.AUTOGUN_KILLS: [(3, 7), (6, 15), (10, 30)],
-        ContractType.AUTOGUN_STREAK: [(2, 10), (3, 20), (4, 30)],
+        ContractType.AUTOGUN_KILLS: [(3, 10), (6, 22), (10, 40)],
+        ContractType.AUTOGUN_STREAK: [(2, 15), (3, 30), (4, 50)],
         ContractType.GUN_KILLS: [(2, 8), (5, 25), (10, 60)],
     },
     GameClass.RIFLEMAN: {
@@ -60,14 +59,14 @@ CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
         ContractType.DOMINATIONS: [(2, 10), (3, 16), (5, 30)],
     },
     GameClass.INFILTRATOR: {
-        ContractType.STABS: [(2, 10), (3, 15), (5, 25)],
+        ContractType.STABS: [(2, 14), (3, 20), (5, 36)],
         ContractType.GUN_KILLS: [(2, 10), (5, 25), (10, 60)],
-        ContractType.CAPTURES: [(3, 12), (5, 20)],
+        ContractType.CAPTURES: [(3, 15), (10, 50)],
     },
     GameClass.QUOTE: {
-        ContractType.KILLS_AS_CLASS: [(3, 9), (5, 15), (10, 30)],
+        ContractType.KILLS_AS_CLASS: [(2, 9), (3, 15), (5, 30)],
         ContractType.DAMAGE_TAKEN: [(5, 4), (8, 8), (12, 20), (15, 50)],
-        ContractType.CAPTURES: [(3, 12), (5, 20)],
+        ContractType.CAPTURES: [(3, 15), (10, 50)],
     },
 }
 
