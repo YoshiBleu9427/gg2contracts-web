@@ -198,7 +198,11 @@ class MessageHandler(StreamRequestHandler):
             contract_bytes += serialized_contract.to_bytes()
 
         self.expecting_data = False
-        return write.uuid(self.user.session_token) + bytes(contract_bytes)
+        return (
+            write.uuid(self.user.session_token)
+            + write.uint(self.user.points)
+            + bytes(contract_bytes)
+        )
 
     def on_request_contracts(self) -> bytes:
         if not self.got_hello:

@@ -10,6 +10,10 @@ def ushort(value: int) -> bytes:
     return struct.pack("<H", value)
 
 
+def uint(value: int) -> bytes:
+    return struct.pack("<I", value)
+
+
 def uuid(value: UUID) -> bytes:
     return value.bytes
 
