@@ -83,3 +83,17 @@ docker compose --env-file compose.env -f compose.yml --profile postgres up -d
 Sqlite file, created at `./database.db`.
 
 Database migrations managed by alembic. `alembic upgrade head`
+
+### Let's Encrypt
+
+Stolen from https://phoenixnap.com/kb/letsencrypt-docker
+
+Setup:
+```bash
+docker compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ --dry-run -d [domain-name]
+```
+
+Renew:
+```bash
+docker compose run --rm certbot renew
+```

@@ -1,5 +1,6 @@
 x-common: &common
   image: gg2-contracts
+  restart: always
   build:
     context: docker
   volumes:
@@ -23,6 +24,22 @@ services:
     <<: *common
     ports:
       - ${WEBAPP_PORT}:${WEBAPP_PORT}
+
+  nginx:
+    image: nginx:latest
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/conf/:/etc/nginx/conf.d/:ro
+      - ./certbot/www/:/var/www/certbot/:ro
+      
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
 
   db:
     profiles:
