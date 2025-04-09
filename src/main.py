@@ -8,5 +8,5 @@ if __name__ == "__main__":
         "contracts.webapp.app:app",
         host=settings.webapp_host,
         port=settings.webapp_port,
-        reload=True,
+        reload=settings.debug,
     )

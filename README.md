@@ -39,6 +39,7 @@ src/
 ├─ static/                  Website static assets
 ├─ templates/               Website templates
 ├─ main.py                  Runs the main web app
+├─ run_cli.py               Runs the cli
 ├─ run_discord_bot.py       Runs the discord bot
 ├─ run_gg2_backend.py       Runs the gg2 TCP backend
 ```
@@ -46,11 +47,36 @@ src/
 
 ## Deploy
 
+### Environment variables
+
+See [compose.env](./compose.env)
+
+| Name | Default | Description |
+| --- | --- | --- |
+| DEBUG | true | Run the app in debug mode (mostly impacts uvicorn settings) |
+| GG2_PORT | 51061 | TCP port for gg2 backend |
+| WEBAPP_PORT | 51062 | TCP port for uvicorn webapp |
+| SQLITE_FILE_NAME | ./database.db | File path to the sqlite database file, if postgres is not used |
+| POSTGRES_HOST |  | Postgres db host. Should be "db" when used with compose. Leave empty to use sqlite instead |
+| POSTGRES_PORT | 5432 | Postgres port |
+| POSTGRES_USER |  | Postgres user name |
+| POSTGRES_PASSWORD |  | Postgres db password |
+
 ### Code
 
 A singular Dockerfile allows building the different components of the app
 
-Then the compose stack, compose.yml, uses those components and bundles them nicely behind an nginx reverse proxy. `docker compose up`
+Then the compose stack, compose.yml, uses those components and bundles them nicely behind an nginx reverse proxy.
+
+```bash
+docker compose --env-file compose.env -f compose.yml up -d
+```
+
+Add `--profile postgres` when using postgres instead of sqlite:
+
+```bash
+docker compose --env-file compose.env -f compose.yml --profile postgres up -d
+```
 
 ### Database
 

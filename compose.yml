@@ -2,6 +2,9 @@ x-common: &common
   image: gg2-contracts
   build:
     context: docker
+  volumes:
+    - ./compose.env:/opt/contracts/.env
+    - ./database.db:/opt/contracts/database.db
 
 services:
   bot:
@@ -12,21 +15,17 @@ services:
   backend:
     <<: *common
     ports:
-      - 4646:4646  # TODO env var
+      - ${GG2_PORT}:${GG2_PORT}
     command: 
      - "run_gg2_backend.py"
     
   website:
     <<: *common
     ports:
-      - 8080:8080
-    
-  nginx:
-    image: nginx:latest
-    ports:
-      - 80:80
-      - 443:443
+      - ${WEBAPP_PORT}:${WEBAPP_PORT}
 
   db:
+    profiles:
+      - postgres
     image: postgres:latest
     
