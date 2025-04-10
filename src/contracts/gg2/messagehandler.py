@@ -6,6 +6,7 @@ from uuid import UUID, uuid4
 from contracts.common.contract_gen import generate_contract
 from contracts.common.db import queries
 from contracts.common.db.engine import get_session
+from contracts.common.logging import logger
 from contracts.common.models import Contract, GameServer, User
 from contracts.common.settings import settings
 from contracts.gg2.network import read, write
@@ -15,8 +16,6 @@ from contracts.gg2.network.constants import (
     ResponseMessageHeader,
 )
 from contracts.gg2.schemas import inschemas, outschemas
-
-# TODO replace print with logger
 
 
 class FailedInteraction(Exception):
@@ -34,58 +33,62 @@ class MessageHandler(StreamRequestHandler):
         super().__init__(*args, **kwargs)
 
     def handle(self) -> None:
-        print(f"[{self.request.getpeername()}] New connexion")
+        logger.info(f"[{self.request.getpeername()}] New connexion")
 
         try:
             while self.expecting_data:
-                print(f"[{self.request.getpeername()}]  Awaiting header")
+                logger.debug(f"[{self.request.getpeername()}]  Awaiting header")
                 try:
                     header_byte = read.uchar(self.request)
                 except TimeoutError:
-                    print(f"[{self.request.getpeername()}]  Timeout")
+                    logger.info(f"[{self.request.getpeername()}]  Timeout")
                     self.expecting_data = False
                     return
 
                 try:
                     header = RequestMessageHeader(header_byte)
                 except ValueError:
-                    print(f"[{self.request.getpeername()}]  Bad header {header_byte}")
+                    logger.info(
+                        f"[{self.request.getpeername()}]  Bad header {header_byte}"
+                    )
                     self.expecting_data = False
                     self.request.send(write.uchar(ResponseMessageHeader.FAIL))
                     return
 
                 func = REQUEST_MESSAGE_CONTENT_BY_TYPE[header]
-                print(f"[{self.request.getpeername()}]  {func.__name__}")
+                logger.info(f"[{self.request.getpeername()}]  {func.__name__}")
 
                 try:
                     result = func(self)
                 except FailedInteraction:
-                    print(f"[{self.request.getpeername()}]  FailedInteraction {header}")
+                    logger.info(
+                        f"[{self.request.getpeername()}]  FailedInteraction {header}"
+                    )
                     self.expecting_data = False
                     self.session.rollback()
                     self.request.send(write.uchar(ResponseMessageHeader.FAIL))
                     return
                 except TimeoutError:
-                    print(f"[{self.request.getpeername()}]  Timeout")
+                    logger.info(f"[{self.request.getpeername()}]  Timeout")
                     self.expecting_data = False
                     self.session.rollback()
                     return
                 except BaseException as e:
-                    print(f"[{self.request.getpeername()}]  Error: {e}")
+                    logger.error(f"[{self.request.getpeername()}]  Error: {e}")
                     self.expecting_data = False
                     self.session.rollback()
                     self.request.close()
                     raise e
                 # TODO probably a better way to handle the exception chain
 
-                print(
+                logger.debug(
                     f"[{self.request.getpeername()}]  Sent response: {result!r}"
-                )  # TODO debug mode
+                )
                 self.request.send(result)
         finally:
             self.session.close()
 
-        print(f"[{self.request.getpeername()}] Closed connexion")
+        logger.info(f"[{self.request.getpeername()}] Closed connexion")
 
     def on_hello(self) -> bytes:
         if self.got_hello:
@@ -96,7 +99,7 @@ class MessageHandler(StreamRequestHandler):
             raise FailedInteraction
 
         self.got_hello = True
-        print("  got hello!")
+        logger.debug("  got hello!")
 
         return write.uchar(ResponseMessageHeader.HELLO)
 
@@ -105,7 +108,7 @@ class MessageHandler(StreamRequestHandler):
             raise FailedInteraction
 
         given_token = read.uuid(self.request)
-        print(f"  Key {given_token}")
+        logger.debug(f"  Key {given_token}")
         user = queries.get_user(self.session, by__key_token=given_token)
         if not user:
             raise FailedInteraction
@@ -120,7 +123,7 @@ class MessageHandler(StreamRequestHandler):
         given_username = read.short_string(self.request)
         given_class = read.uchar(self.request)
 
-        print(f"  {given_username} [{given_class}]")
+        logger.debug(f"  {given_username} [{given_class}]")
 
         new_user = User(username=given_username, main_class=given_class)
 
@@ -139,7 +142,7 @@ class MessageHandler(StreamRequestHandler):
             raise FailedInteraction
 
         given_string = read.short_string(self.request)
-        print(f"  {given_string}")
+        logger.debug(f"  {given_string}")
         self.user.username = given_string
         self.session.add(self.user)
         self.session.commit()
@@ -155,7 +158,7 @@ class MessageHandler(StreamRequestHandler):
             raise FailedInteraction
 
         given_server_id = read.uuid(self.request)
-        print(f"  server id {given_server_id}")
+        logger.debug(f"  server id {given_server_id}")
 
         found_server = queries.get_game_server(self.session, given_server_id)
         if not found_server:
@@ -236,7 +239,7 @@ class MessageHandler(StreamRequestHandler):
         self.session.commit()
         self.session.refresh(new_server)
 
-        print(f"  Giving {new_server.identifier}")
+        logger.debug(f"  Giving {new_server.identifier}")
 
         self.expecting_data = False
         return write.uuid(new_server.identifier) + write.uuid(
@@ -249,31 +252,31 @@ class MessageHandler(StreamRequestHandler):
 
         server_id = read.uuid(self.request)
         session_token = read.uuid(self.request)
-        print(f"  server id {server_id}")
-        print(f"  session {session_token}")
+        logger.debug(f"  server id {server_id}")
+        logger.debug(f"  session {session_token}")
 
         found_user = queries.get_user(self.session, by__session_token=session_token)
         if not found_user:
-            print("  user not found")
+            logger.warning("  user not found")
             raise FailedInteraction
 
         found_server = queries.get_game_server(self.session, by__identifier=server_id)
         if not found_server:
-            print("  server not found")
+            logger.warning("  server not found")
             raise FailedInteraction
 
         if found_user.last_joined_server != server_id:
             found_user.last_joined_server = None
             self.session.add(found_user)
             self.session.commit()
-            print("  user-server match failed")
+            logger.warning("  user-server match failed")
             raise FailedInteraction
 
         found_user.server_validated_session = True
         self.session.add(found_user)
         self.session.commit()
 
-        print("  session validated")
+        logger.debug("  session validated")
 
         active_contracts = queries.get_contracts(
             self.session, by__user_identifier=found_user.identifier, by__completed=False
@@ -294,25 +297,25 @@ class MessageHandler(StreamRequestHandler):
             raise FailedInteraction
 
         server_id = read.uuid(self.request)
-        print(f"  server id {server_id}")
+        logger.debug(f"  server id {server_id}")
         found_server = queries.get_game_server(self.session, by__identifier=server_id)
         if not found_server:
             raise FailedInteraction
 
         # consume validation token
         server_validation_token = read.uuid(self.request)
-        print(f"  token {server_validation_token}")
+        logger.debug(f"  token {server_validation_token}")
         if found_server.validation_token != server_validation_token:
             raise FailedInteraction
 
         found_server.validation_token = uuid4()
-        print("  validated token")
+        logger.debug("  validated token")
 
         # find users that we know have played on this server
         server_users = queries.get_users(
             self.session, by__server_id=server_id, by__server_validated=True
         )
-        print(f"  server has {len(server_users)} known users")
+        logger.debug(f"  server has {len(server_users)} known users")
 
         users_by_session = {
             user.session_token: user for user in server_users if user.session_token
@@ -322,12 +325,14 @@ class MessageHandler(StreamRequestHandler):
 
         # deserialize data
         item_count = read.uchar(self.request)
-        print(f"  reading {item_count} items")
+        logger.debug(f"  reading {item_count} items")
         for _ in range(item_count):
             deserialized_data = inschemas.InPlayerRoundEndData.from_bytes(self.request)
             user = users_by_session.get(deserialized_data.session_token)
             if not user:
-                print(f"    ignoring unknown session {deserialized_data.session_token}")
+                logger.debug(
+                    f"    ignoring unknown session {deserialized_data.session_token}"
+                )
                 # ignore data if player moved to another server ig
                 # TODO think about this more
                 # because otherwise gameserver needs to keep track of
@@ -336,7 +341,7 @@ class MessageHandler(StreamRequestHandler):
 
             user_contracts_by_id = {con.identifier: con for con in user.contracts}
             user_active_contracts = [con for con in user.contracts if not con.completed]
-            print(f"    user {user.identifier} has {len(user.contracts)}")
+            logger.debug(f"    user {user.identifier} has {len(user.contracts)}")
 
             completed_ids: list[UUID] = []
             new_contracts = []
@@ -356,7 +361,7 @@ class MessageHandler(StreamRequestHandler):
                     new_contracts.append(new_contract)
                     user_active_contracts.append(new_contract)
 
-            print(f"    generated {len(new_contracts)} new contracts")
+            logger.debug(f"    generated {len(new_contracts)} new contracts")
 
             # TODO refactor because this is stupid
             pre_update_data.append(

@@ -6,6 +6,7 @@ x-common: &common
   volumes:
     - ./compose.env:/opt/contracts/.env
     - ./database.db:/opt/contracts/database.db
+    - ${LOG_DIR}:/opt/contracts/logs
 
 services:
   bot:

@@ -54,6 +54,7 @@ See [compose.env](./compose.env)
 | Name | Default | Description |
 | --- | --- | --- |
 | DEBUG | true | Run the app in debug mode (mostly impacts uvicorn settings) |
+| LOG_DIR | ./logs | Directory for log files |
 | GG2_PORT | 51061 | TCP port for gg2 backend |
 | WEBAPP_PORT | 51062 | TCP port for uvicorn webapp |
 | SQLITE_FILE_NAME | ./database.db | File path to the sqlite database file, if postgres is not used |

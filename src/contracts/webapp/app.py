@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from contracts.common.db.engine import on_startup
+from contracts.common.logging import logger
 from contracts.webapp.routes import index
 from contracts.webapp.routes.api import users
 from contracts.webapp.settings import BASE_DIR
@@ -12,9 +13,9 @@ from contracts.webapp.settings import BASE_DIR
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Setup database before starting the app
-    print("Setting up database...")  # TODO logger
+    logger.info("Setting up database...")
     on_startup()
-    print("Done.")
+    logger.info("Done.")
     yield
 
 
