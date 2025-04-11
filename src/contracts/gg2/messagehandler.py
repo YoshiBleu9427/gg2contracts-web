@@ -394,8 +394,8 @@ class MessageHandler(StreamRequestHandler):
         serialized_data = bytearray()
         serialized_data += write.uuid(found_server.validation_token)
         serialized_data += write.uchar(len(update_data))
-        for item in update_data:
-            serialized_data += item.to_bytes()
+        for update_item in update_data:
+            serialized_data += update_item.to_bytes()
 
         self.expecting_data = False
         return bytes(serialized_data)
