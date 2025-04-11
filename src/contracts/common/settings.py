@@ -6,6 +6,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     debug: bool = True
 
+    discord_token: str = ""
+
     gg2_host: str = "0.0.0.0"
     gg2_port: int = 51061
     gg2_timeout: float = 3.0
