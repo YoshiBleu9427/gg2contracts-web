@@ -57,7 +57,7 @@ See [compose.env](./compose.env)
 | DISCORD_TOKEN |  | Discord bot auth token |
 | LOG_DIR | ./logs | Directory for log files |
 | GG2_PORT | 51061 | TCP port for gg2 backend |
-| WEBAPP_PORT | 51062 | TCP port for uvicorn webapp |
+| WEBAPP_PORT | 8080 | TCP port for uvicorn webapp |
 | SQLITE_FILE_NAME | ./database.db | File path to the sqlite database file, if postgres is not used |
 | POSTGRES_HOST |  | Postgres db host. Should be "db" when used with compose. Leave empty to use sqlite instead |
 | POSTGRES_PORT | 5432 | Postgres port |
@@ -92,7 +92,7 @@ Stolen from https://phoenixnap.com/kb/letsencrypt-docker
 
 Setup:
 ```bash
-docker compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ --dry-run -d [domain-name]
+docker compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ --dry-run -d gg2.ybot.fr
 ```
 
 Renew:

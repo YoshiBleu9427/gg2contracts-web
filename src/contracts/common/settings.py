@@ -40,7 +40,7 @@ class Settings(BaseSettings):
         else:
             return f"sqlite:///{self.sqlite_file_name}"
 
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
 settings = Settings()

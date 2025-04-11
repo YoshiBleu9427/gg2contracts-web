@@ -1,8 +1,9 @@
 x-common: &common
-  image: gg2-contracts
+  image: gg2contracts/webapp:dev
   restart: always
   build:
-    context: docker
+    context: .
+    dockerfile: docker/Dockerfile
   volumes:
     - ./compose.env:/opt/contracts/.env
     - ./database.db:/opt/contracts/database.db
@@ -35,6 +36,7 @@ services:
     volumes:
       - ./nginx/conf/:/etc/nginx/conf.d/:ro
       - ./certbot/www/:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
       
   certbot:
     image: certbot/certbot:latest
@@ -46,4 +48,8 @@ services:
     profiles:
       - postgres
     image: postgres:latest
-    
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
