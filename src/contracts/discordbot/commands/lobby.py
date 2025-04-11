@@ -1,13 +1,18 @@
 from nextcord import Embed
 from nextcord.ext import commands
 
+from contracts.gg2 import lobby as gg2lobby
+
 
 @commands.command()
 async def lobby(ctx: commands.Context):
     """
     Get lobby status
     """
-    player_count = 42069  # TODO
+    player_count = 0
+    data = gg2lobby.get_lobby_data()
+    for server in data.servers:
+        player_count += server.players
 
     embed = Embed(
         title="Gang Garrison 2 Lobby Status",
@@ -19,11 +24,10 @@ async def lobby(ctx: commands.Context):
         "https://cdn.discordapp.com/icons/699590084218847282/be805b3d3557a9cc2bf98ae19c5ae27c.webp?size=256"
     )
 
-    # TODO pydantic model
-    # TODO read from lobby
-    servers = [{}, {}]
+    for server in data.servers:
+        desc = f"[{server.players}/{server.slots}] {server.info.get('map', '')}"
+        # TODO also use game_short and game_ver
 
-    for server in servers:
-        embed.add_field(name="name", value="value", inline=False)
+        embed.add_field(name=server.info.get("name", ""), value=desc, inline=False)
 
     await ctx.send(embed=embed)
