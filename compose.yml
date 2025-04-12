@@ -1,5 +1,5 @@
 x-common: &common
-  image: gg2contracts/webapp:dev
+  image: gg2contracts/webapp:${APP_VERSION:-dev}
   restart: always
   build:
     context: .
