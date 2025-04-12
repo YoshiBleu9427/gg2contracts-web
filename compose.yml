@@ -8,19 +8,20 @@ x-common: &common
     - ./compose.env:/opt/contracts/.env
     - ./database.db:/opt/contracts/database.db
     - ${LOG_DIR}:/opt/contracts/logs
+    - ./certbot/conf/:/opt/contracts/certbot:ro
 
 services:
   bot:
     <<: *common
     command: 
-     - "run_discord_bot.py"
+     - "src/run_discord_bot.py"
     
   backend:
     <<: *common
     ports:
       - ${GG2_PORT}:${GG2_PORT}
     command: 
-     - "run_gg2_backend.py"
+     - "src/run_gg2_backend.py"
     
   website:
     <<: *common
@@ -28,8 +29,9 @@ services:
       - ${WEBAPP_PORT}:${WEBAPP_PORT}
 
   nginx:
+    profiles:
+      - certbot
     image: nginx:latest
-    restart: always
     ports:
       - 80:80
       - 443:443
@@ -39,6 +41,8 @@ services:
       - ./certbot/conf/:/etc/nginx/ssl/:ro
       
   certbot:
+    profiles:
+      - certbot
     image: certbot/certbot:latest
     volumes:
       - ./certbot/www/:/var/www/certbot/:rw

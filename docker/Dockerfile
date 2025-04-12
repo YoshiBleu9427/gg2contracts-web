@@ -6,6 +6,7 @@ WORKDIR /opt/contracts
 COPY src src
 COPY alembic.ini alembic.ini
 COPY pyproject.toml pyproject.toml
+COPY logging.conf logging.conf
 COPY uv.lock uv.lock
 
 RUN uv sync
