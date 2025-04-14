@@ -349,6 +349,9 @@ class MessageHandler(StreamRequestHandler):
                 contract = user_contracts_by_id[con_data.contract_id]
                 contract.update_value(con_data.value_modifier)
                 if contract.completed:
+                    if contract not in user_active_contracts:
+                        continue
+
                     user_active_contracts.remove(contract)
 
                     contract.validated_by_identifier = server_id
