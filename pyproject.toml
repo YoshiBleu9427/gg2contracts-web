@@ -1,7 +1,7 @@
 [project]
 name = "gg2contracts"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.1.2"
+description = "Gang Garrison 2 Contracts Website and Backend"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

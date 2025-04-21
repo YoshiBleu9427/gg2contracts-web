@@ -21,8 +21,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="The gg2 contracts website",
-    description="Default description",
-    version="0.1.0",
+    description="Gang Garrison 2 Contracts Website and Backend",
+    version="0.1.2",
     lifespan=lifespan,
 )
 
