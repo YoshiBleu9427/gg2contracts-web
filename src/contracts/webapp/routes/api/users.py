@@ -15,6 +15,7 @@ router = APIRouter(prefix="/api/users", tags=["Users"])
 class InUserSchema(BaseModel):
     username: str
     main_class: GameClass
+    discord_username: str | None
 
 
 class OutUserSchema(BaseModel):
@@ -22,6 +23,14 @@ class OutUserSchema(BaseModel):
     username: str
     main_class: str
     contracts: list[Contract]
+
+
+def _raise_if_discord_username_exists(session: SessionDep, discord_username: str):
+    if queries.get_user(session, by__discord_username=discord_username):
+        raise HTTPException(
+            status_code=422,
+            detail="A different user already claimed this discord username.",
+        )
 
 
 @router.get("/")
@@ -61,7 +70,15 @@ def get_user(session: SessionDep, identifier: str):
 @router.post("/")
 def create_user(schema: InUserSchema, session: SessionDep) -> OutUserSchema:
     time.sleep(1)  # totally super secure B)
-    new_user = User(username=schema.username, main_class=schema.main_class)
+
+    if schema.discord_username:
+        _raise_if_discord_username_exists(session, schema.discord_username)
+
+    new_user = User(
+        username=schema.username,
+        main_class=schema.main_class,
+        discord_username=schema.discord_username,
+    )
     session.add(new_user)
     session.commit()
     session.refresh(new_user)
@@ -74,11 +91,12 @@ def create_user(schema: InUserSchema, session: SessionDep) -> OutUserSchema:
     )
 
 
-@router.post("/{user_key}")
+@router.put("/{user_key}")
 def update_user(
     schema: InUserSchema, user_key: str, session: SessionDep
 ) -> OutUserSchema:
     time.sleep(1)  # totally super secure B)
+
     try:
         UUID(user_key)
     except ValueError:
@@ -90,6 +108,10 @@ def update_user(
 
     found_user.username = schema.username
     found_user.main_class = schema.main_class
+
+    if schema.discord_username:
+        _raise_if_discord_username_exists(session, schema.discord_username)
+        found_user.discord_username = schema.discord_username
 
     session.commit()
 

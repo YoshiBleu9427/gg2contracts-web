@@ -1,7 +1,7 @@
 from typing import Sequence
 from uuid import UUID
 
-from sqlmodel import Session, col, select
+from sqlmodel import Session, col, desc, func, select
 
 from contracts.common.models import Contract, GameServer, User
 
@@ -11,6 +11,8 @@ def get_users(
     by__server_id: UUID | None = None,
     by__server_validated: bool | None = None,
     by__username: str | None = None,
+    limit: int | None = None,
+    order_by__points: bool | None = None,
 ) -> Sequence[User]:
     query = select(User)
 
@@ -23,6 +25,12 @@ def get_users(
     if by__username is not None:
         query = query.where(col(User.username).contains(by__username))
 
+    if order_by__points:
+        query = query.order_by(None).order_by(desc(User.points))
+
+    if limit is not None:
+        query = query.limit(limit)
+
     return session.exec(query).all()
 
 
@@ -32,6 +40,7 @@ def get_user(
     by__key_token: UUID | None = None,
     by__session_token: UUID | None = None,
     by__username: str | None = None,
+    by__discord_username: str | None = None,
 ) -> User | None:
     query = select(User)
 
@@ -46,6 +55,9 @@ def get_user(
 
     if by__username:
         query = query.where(User.username == by__username)
+
+    if by__discord_username:
+        query = query.where(User.discord_username == by__discord_username)
 
     return session.exec(query).one_or_none()
 
@@ -88,3 +100,19 @@ def get_contracts(
         query = query.where(Contract.completed == by__completed)
 
     return session.exec(query).all()
+
+
+def get_contracts_count(
+    session: Session,
+    by__user_identifier: UUID | None = None,
+    by__completed: bool | None = None,
+) -> int:
+    query = select(func.count(col(Contract.identifier)))
+
+    if by__user_identifier:
+        query = query.where(Contract.user_identifier == by__user_identifier)
+
+    if by__completed is not None:
+        query = query.where(Contract.completed == by__completed)
+
+    return session.exec(query).one()

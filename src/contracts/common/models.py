@@ -43,6 +43,11 @@ class User(ContractBaseModel, table=True):
         nullable=False,
     )
     username: str
+    discord_username: str | None = Field(
+        default=None,
+        index=True,
+        unique=True,
+    )
     key_token: UUID = Field(
         default_factory=uuid4,
         index=True,
