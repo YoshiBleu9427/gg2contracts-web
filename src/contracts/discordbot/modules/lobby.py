@@ -1,14 +1,16 @@
 from nextcord import Embed
-from nextcord.ext import commands
 
+from contracts.common.logging import logger
+from contracts.discordbot.sendable import Sendable
 from contracts.gg2 import lobby as gg2lobby
 
 
-@commands.command()
-async def lobby(ctx: commands.Context):
+def lobby() -> Sendable:
     """
     Get lobby status
     """
+    logger.debug("cmd lobby")
+
     player_count = 0
     data = gg2lobby.get_lobby_data()
     for server in data.servers:
@@ -30,4 +32,4 @@ async def lobby(ctx: commands.Context):
 
         embed.add_field(name=server.info.get("name", ""), value=desc, inline=False)
 
-    await ctx.send(embed=embed)
+    return Sendable(embed=embed)

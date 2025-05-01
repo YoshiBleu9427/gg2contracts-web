@@ -417,4 +417,5 @@ REQUEST_MESSAGE_CONTENT_BY_TYPE: dict[
     RequestMessageHeader.SERVER_RECEIVES_CLIENT: MessageHandler.on_server_receives_client,
     RequestMessageHeader.GAME_DATA: MessageHandler.on_server_sends_game_data,
     # TODO "endpoint" for server to invalidate their previous validation token and request a new one
+    # TODO "endpoint" for client to invalidate a contract and regenerate a new one instead
 }

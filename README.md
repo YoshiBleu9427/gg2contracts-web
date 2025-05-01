@@ -55,6 +55,8 @@ See [compose.env](./compose.env)
 | --- | --- | --- |
 | DEBUG | true | Run the app in debug mode (mostly impacts uvicorn settings) |
 | DISCORD_TOKEN |  | Discord bot auth token |
+| DISCORD_PREFIX | gg2 | Discord bot command prefix |
+| DISCORD_TEST_GUILD |  | Discord bot guild ID for testing slash commands (intended for dev only) |
 | LOG_DIR | ./logs | Directory for log files |
 | GG2_PORT | 51061 | TCP port for gg2 backend |
 | WEBAPP_PORT | 8080 | TCP port for uvicorn webapp |

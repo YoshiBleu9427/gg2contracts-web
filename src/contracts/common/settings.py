@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     debug: bool = True
 
     discord_token: str = ""
+    discord_prefix: str = "gg2"
+    discord_test_guild: int | None = None
 
     gg2_host: str = "0.0.0.0"
     gg2_port: int = 51061

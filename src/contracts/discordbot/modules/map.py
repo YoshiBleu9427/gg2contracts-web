@@ -3,9 +3,8 @@ import random
 from urllib.parse import quote
 from urllib.request import urlopen
 
-from nextcord.ext import commands
-
 from contracts.common.logging import logger
+from contracts.discordbot.sendable import Sendable
 
 REPO_OWNER: str = "Derpduck"
 REPO_NAME: str = "GG2-Map-Archive"
@@ -73,22 +72,20 @@ class MapArchive:
 _mapArchive = MapArchive()
 
 
-@commands.command()
-async def map(ctx: commands.Context, map_name: str | None):
+def map(map_name: str | None) -> Sendable:
     """
     Returns a gg2 map
 
     Fetches a map by name from Derpduck's map archive on github,
     or returns a random one.
     """
-    logger.debug(map_name)
+    logger.debug(f"cmd map {map_name}")
 
     try:
         _mapArchive.update_if_empty()
     except MalformedResponse:
         logger.error("Malformed response from github")
-        await ctx.send("Error: Malformed response from github")
-        raise
+        return Sendable(content="Error: Malformed response from github")
 
     logger.debug(f"Archive count: {len(_mapArchive.maps_by_name)}")
 
@@ -101,4 +98,4 @@ async def map(ctx: commands.Context, map_name: str | None):
         # TODO find by similarity
         result_text = "Not Found"
 
-    await ctx.send(result_text)
+    return Sendable(content=result_text)

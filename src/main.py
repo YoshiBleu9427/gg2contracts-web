@@ -14,5 +14,5 @@ if __name__ == "__main__":
         uvikwargs["ssl_certfile"] = settings.webapp_ssl_certfile
     if settings.webapp_ssl_keyfile:
         uvikwargs["ssl_keyfile"] = settings.webapp_ssl_keyfile
-        
-    uvicorn.run("contracts.webapp.app:app", **uvikwargs)
+
+    uvicorn.run("contracts.webapp.app:app", **uvikwargs)  # type: ignore
