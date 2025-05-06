@@ -12,9 +12,9 @@ COMMON_CONTRACTS: dict[ContractType, list[tuple[int, int]]] = {
     ContractType.CAPTURES: [(3, 15), (7, 30), (12, 60)],
 }
 RARE_CONTRACTS: dict[ContractType, list[tuple[int, int]]] = {
-    ContractType.KILLS_ON_CLASS: [(2, 12), (4, 30), (6, 60)],
+    ContractType.KILLS_ON_CLASS: [(2, 12), (3, 20), (4, 30)],
     ContractType.DOMINATIONS: [(2, 20), (3, 35), (5, 60)],
-    ContractType.UBERED_KILLS: [(3, 20), (10, 75)],
+    ContractType.UBERED_KILLS: [(2, 20), (3, 35), (4, 50), (5, 75)],
     ContractType.KILL_STREAK: [(3, 20), (4, 30), (5, 50)],
 }
 CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
@@ -29,13 +29,13 @@ CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
     },
     GameClass.ROCKETMAN: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
-        ContractType.DOMINATIONS: [(2, 10), (3, 16), (5, 30)],
-        ContractType.DAMAGE_TAKEN: [(3, 4), (5, 8), (7, 20), (10, 50)],
+        ContractType.DOMINATIONS: [(2, 20), (3, 35), (5, 60)],
+        ContractType.DAMAGE_TAKEN: [(3, 4), (5, 10), (7, 20), (9, 50)],
     },
     GameClass.OVERWEIGHT: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
-        ContractType.DOMINATIONS: [(2, 10), (3, 16), (5, 30)],
-        ContractType.DAMAGE_TAKEN: [(3, 4), (5, 8), (7, 20), (10, 50)],
+        ContractType.DOMINATIONS: [(2, 20), (3, 35), (5, 60)],
+        ContractType.DAMAGE_TAKEN: [(3, 4), (5, 10), (7, 20), (9, 50)],
     },
     GameClass.DETONATOR: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
@@ -45,7 +45,7 @@ CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
     GameClass.HEALER: {
         ContractType.HEALING: [(12, 6), (18, 12), (25, 18), (100, 70)],
         ContractType.UBERS: [(2, 6), (5, 15)],
-        ContractType.HEAL_STREAK: [(5, 6), (8, 18), (12, 40), (15, 80)],
+        ContractType.HEAL_STREAK: [(5, 6), (8, 18), (10, 30), (12, 60)],
         ContractType.UBERED_KILLS: [(3, 20), (10, 75), (20, 160)],
         ContractType.UBERED_STREAK: [(2, 20), (3, 50)],
     },
@@ -56,7 +56,7 @@ CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
     },
     GameClass.RIFLEMAN: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
-        ContractType.DOMINATIONS: [(2, 10), (3, 16), (5, 30)],
+        ContractType.DOMINATIONS: [(2, 20), (3, 35), (5, 60)],
     },
     GameClass.INFILTRATOR: {
         ContractType.STABS: [(2, 14), (3, 20), (5, 36)],
@@ -65,7 +65,7 @@ CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
     },
     GameClass.QUOTE: {
         ContractType.KILLS_AS_CLASS: [(2, 9), (3, 15), (5, 30)],
-        ContractType.DAMAGE_TAKEN: [(3, 4), (5, 8), (7, 20), (10, 50)],
+        ContractType.DAMAGE_TAKEN: [(3, 4), (5, 10), (7, 20), (9, 50)],
         ContractType.CAPTURES: [(3, 15), (10, 50)],
     },
 }
