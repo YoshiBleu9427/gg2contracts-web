@@ -12,7 +12,7 @@ class LobbyCommandCog(commands.Cog):
     @nextcord.slash_command(name="lobby")
     async def lobby_slash_command(self, interaction: nextcord.Interaction):
         """
-        Show contracts leaderboard
+        Get gg2 lobby status
         """
         logger.debug("slashcmd lobby")
         result = lobby_module.lobby()

@@ -18,15 +18,8 @@ class ContractsCommandCog(commands.Cog):
             await ctx.send("Internal error")
 
     @nextcord.slash_command(name="contracts")
-    async def contracts_slash_command(
-        self, interaction: nextcord.Interaction, limit: int = 3
-    ):
-        """
-        Show contracts leaderboard
-        """
-        logger.debug(f"slashcmd contracts top limit={limit}")
-        result = contract_module.top(limit)
-        await result.send_to_ctx(interaction)
+    async def contracts_slash_command(self, _: nextcord.Interaction):
+        pass
 
     @contracts_slash_command.subcommand(name="top")
     async def top_slash_command(
@@ -42,7 +35,7 @@ class ContractsCommandCog(commands.Cog):
     @contracts_slash_command.subcommand(name="me")
     async def me_slash_command(self, interaction: nextcord.Interaction):
         """
-        Show contracts leaderboard
+        If you linked your contracts account, show your stats
         """
         logger.debug("slashcmd contracts me")
 
