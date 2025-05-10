@@ -18,7 +18,6 @@
 <form id="myform">
     Login key: <input id="userkey" name="key" placeholder="123456789012-1234-1234-1234-12345678" /> (find it in your gg2.ini after playing a game with contracts) <br/>
     Username: <input name="username" placeholder="username" /> (this will not be displayed in-game and will help us find you to give out your rewards when the contest ends)<br/>
-    Discord name: <input name="discord_username" placeholder="leave empty = do not update" /> (this will allow you to interact more with Ms. Paula in the gg2 discord server. Leave empty)<br/>
     Mainclass: <select name="main_class">
         <option value=0>RUNNER</option>
         <option value=8>FIREBUG</option>
@@ -63,7 +62,6 @@
                 },
                 body: JSON.stringify({
                     "username": formData.get("username"),
-                    "discord_username": formData.get("discord_username"),
                     "main_class": formData.get("main_class"),
                 })
             })

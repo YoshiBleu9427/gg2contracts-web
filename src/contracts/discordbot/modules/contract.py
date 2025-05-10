@@ -1,5 +1,7 @@
 from datetime import datetime
+from uuid import UUID
 
+import nextcord
 from nextcord import Embed
 
 from contracts.common.db.engine import get_session
@@ -64,8 +66,8 @@ def me(discord_username: str) -> Sendable:
     if not user:
         session.close()
         return Sendable(
-            content=f"I don't know who you are, {discord_username}. "
-            "Did you sign up and update your profile with your discord username?"
+            content="Sorry, I don't know who you are. "
+            "Did you sign up and /link your profile to your discord account?"
         )
 
     contract_count = get_contracts_count(session, by__user_identifier=user.identifier)
@@ -98,3 +100,74 @@ def me(discord_username: str) -> Sendable:
     session.close()
 
     return Sendable(embed=embed)
+
+
+def link(discord_username: str) -> Sendable:
+    session = next(get_session())
+    found_user = get_user(session, by__discord_username=discord_username)
+    session.close()
+
+    if found_user:
+        return Sendable(content="Already associated")
+    else:
+        return Sendable(modal=AccountAssociationModal())
+
+
+def unlink(discord_username: str) -> Sendable:
+    session = next(get_session())
+
+    found_user = get_user(session, by__discord_username=discord_username)
+
+    if found_user:
+        found_user.discord_username = None
+        session.commit()
+        session.close()
+        return Sendable(content="Unlinked contracts account")
+    else:
+        session.close()
+        return Sendable(content="No associated contracts account")
+
+
+class AccountAssociationModal(nextcord.ui.Modal):
+    def __init__(self):
+        super().__init__(
+            "Associate contracts with discord account",
+            timeout=5 * 60,  # 5 minutes
+        )
+
+        self.user_key = nextcord.ui.TextInput(
+            label="user_key (find it in `gg2.ini`)",
+            placeholder="1234567890abcdef1234567890abcdef",
+            min_length=32,
+            max_length=32,
+        )
+        self.add_item(self.user_key)
+
+    async def callback(self, interaction: nextcord.Interaction) -> None:
+        assert interaction.user
+
+        user_key_as_uuid = UUID(hex=self.user_key.value)
+
+        session = next(get_session())
+        found_user = get_user(session, by__key_token=user_key_as_uuid)
+
+        if found_user:
+            if found_user.discord_username:
+                if found_user.discord_username == interaction.user.name:
+                    response = "Accounts already associated. You're good to go!"
+                else:
+                    logger.warning(
+                        f"Discord user {interaction.user.name} tried to associate using key {self.user_key.value} "
+                        f"which is already associated with user {found_user.discord_username}"
+                    )
+                    response = "The given key is already associated with a different discord account."
+            else:
+                found_user.discord_username = interaction.user.name
+                session.commit()
+                response = f"Success! Your discord account is now associated to contracts account `{found_user.username}`."
+        else:
+            response = "Failed to associate: no user found with the given user key"
+
+        session.close()
+
+        await interaction.send(response, ephemeral=True)
