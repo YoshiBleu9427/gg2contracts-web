@@ -40,7 +40,8 @@ CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
     GameClass.DETONATOR: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
         ContractType.CAPTURES: [(3, 15), (10, 50)],
-        ContractType.KILL_STREAK: [(3, 15), (5, 30), (7, 50)],
+        ContractType.DOMINATIONS: [(2, 20), (3, 35), (5, 60)],
+        ContractType.KILL_STREAK: [(3, 20), (4, 30), (5, 50)],
     },
     GameClass.HEALER: {
         ContractType.HEALING: [(12, 6), (18, 12), (25, 18), (100, 70)],
