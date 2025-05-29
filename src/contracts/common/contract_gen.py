@@ -9,32 +9,32 @@ COMMON_CONTRACTS: dict[ContractType, list[tuple[int, int]]] = {
     ContractType.KILLS: [(5, 12), (15, 40), (25, 75)],
     ContractType.ROUNDS_PLAYED: [(2, 5), (3, 10), (5, 16)],
     ContractType.ROUNDS_WON: [(1, 5), (2, 11), (3, 18)],
-    ContractType.CAPTURES: [(3, 15), (7, 30), (12, 60)],
 }
 RARE_CONTRACTS: dict[ContractType, list[tuple[int, int]]] = {
-    ContractType.KILLS_ON_CLASS: [(2, 12), (3, 20), (4, 30)],
+    ContractType.CAPTURES: [(3, 15), (7, 30), (12, 60)],
     ContractType.DOMINATIONS: [(2, 20), (3, 35), (5, 60)],
-    ContractType.UBERED_KILLS: [(2, 20), (3, 35), (4, 50), (5, 75)],
     ContractType.KILL_STREAK: [(3, 20), (4, 30), (5, 50)],
 }
 CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
     GameClass.RUNNER: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
+        ContractType.KILLS_ON_CLASS: [(2, 12), (3, 20), (4, 30)],
         ContractType.CAPTURES: [(3, 15), (5, 20), (7, 30), (12, 60)],
     },
     GameClass.FIREBUG: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
+        ContractType.KILLS_ON_CLASS: [(2, 12), (3, 20), (4, 30)],
         ContractType.BURN_DURATION: [(4, 3), (6, 6), (10, 12), (15, 20)],
         ContractType.FLARE_KILLS: [(1, 8), (2, 18), (3, 30)],
     },
     GameClass.ROCKETMAN: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
-        ContractType.DOMINATIONS: [(2, 20), (3, 35), (5, 60)],
+        ContractType.KILLS_ON_CLASS: [(2, 12), (3, 20), (4, 30)],
         ContractType.DAMAGE_TAKEN: [(3, 4), (5, 10), (7, 20), (9, 50)],
     },
     GameClass.OVERWEIGHT: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
-        ContractType.DOMINATIONS: [(2, 20), (3, 35), (5, 60)],
+        ContractType.KILLS_ON_CLASS: [(2, 12), (3, 20), (4, 30)],
         ContractType.DAMAGE_TAKEN: [(3, 4), (5, 10), (7, 20), (9, 50)],
     },
     GameClass.DETONATOR: {
@@ -47,22 +47,25 @@ CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
         ContractType.HEALING: [(12, 6), (18, 12), (25, 18), (100, 70)],
         ContractType.UBERS: [(2, 6), (5, 15)],
         ContractType.HEAL_STREAK: [(5, 6), (8, 18), (10, 30), (12, 60)],
-        ContractType.UBERED_KILLS: [(3, 20), (10, 75), (20, 160)],
-        ContractType.UBERED_STREAK: [(2, 20), (3, 50)],
+        ContractType.UBERED_KILLS: [(2, 20), (3, 35), (4, 50), (5, 75)],
+        ContractType.UBERED_STREAK: [(2, 35)],
     },
     GameClass.CONSTRUCTOR: {
         ContractType.AUTOGUN_KILLS: [(3, 10), (6, 22), (10, 40)],
-        ContractType.AUTOGUN_STREAK: [(2, 15), (3, 30)],
+        ContractType.AUTOGUN_STREAK: [(2, 15)],
         ContractType.GUN_KILLS: [(2, 8), (5, 25), (10, 60)],
     },
     GameClass.RIFLEMAN: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
         ContractType.DOMINATIONS: [(2, 20), (3, 35), (5, 60)],
+        ContractType.KILL_STREAK: [(3, 20), (4, 30), (5, 50)],
     },
     GameClass.INFILTRATOR: {
+        ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
         ContractType.STABS: [(2, 14), (3, 20), (5, 36)],
         ContractType.GUN_KILLS: [(2, 10), (5, 25), (10, 60)],
         ContractType.CAPTURES: [(3, 15), (10, 50)],
+        ContractType.KILL_STREAK: [(2, 15), (3, 20), (4, 30)],
     },
     GameClass.QUOTE: {
         ContractType.KILLS_AS_CLASS: [(2, 9), (3, 15), (5, 30)],
@@ -100,10 +103,6 @@ def generate_contract(for_user: User, active_contracts: list[Contract]) -> Contr
     contract_type = random.choice(chooseable_types)
     possible_values = choosables[contract_type]
     chosen_target, chosen_points = random.choice(possible_values)
-
-    # exception for quote -- way too rare
-    if contract_type == ContractType.KILLS_ON_CLASS and game_class == GameClass.QUOTE:
-        game_class = GameClass.ROCKETMAN
 
     return Contract(
         contract_type=contract_type,
