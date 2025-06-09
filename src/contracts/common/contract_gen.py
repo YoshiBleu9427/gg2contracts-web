@@ -39,9 +39,7 @@ CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
     },
     GameClass.DETONATOR: {
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
-        ContractType.CAPTURES: [(3, 15), (10, 50)],
-        ContractType.DOMINATIONS: [(2, 20), (3, 35), (5, 60)],
-        ContractType.KILL_STREAK: [(3, 20), (4, 30), (5, 50)],
+        ContractType.FLYING_STICKY: [(2, 12), (3, 20), (4, 30)],
     },
     GameClass.HEALER: {
         ContractType.HEALING: [(12, 6), (18, 12), (25, 18), (100, 70)],
@@ -56,6 +54,7 @@ CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
         ContractType.GUN_KILLS: [(2, 8), (5, 25), (10, 60)],
     },
     GameClass.RIFLEMAN: {
+        ContractType.NOSCOPE_KILLS: [(3, 12), (5, 22), (10, 45)],
         ContractType.KILLS_AS_CLASS: [(3, 9), (5, 16), (10, 35)],
         ContractType.DOMINATIONS: [(2, 20), (3, 35), (5, 60)],
         ContractType.KILL_STREAK: [(3, 20), (4, 30), (5, 50)],
@@ -69,7 +68,7 @@ CLASS_CONTRACTS: dict[GameClass, dict[ContractType, list[tuple[int, int]]]] = {
     },
     GameClass.QUOTE: {
         ContractType.KILLS_AS_CLASS: [(2, 9), (3, 15), (5, 30)],
-        ContractType.DAMAGE_TAKEN: [(3, 4), (5, 10), (7, 20), (9, 50)],
+        ContractType.BUBBLE_SHIELD: [(3, 6), (5, 10), (7, 16), (10, 25)],
         ContractType.CAPTURES: [(3, 15), (10, 50)],
     },
 }

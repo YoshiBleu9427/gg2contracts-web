@@ -22,6 +22,9 @@ class ContractType(IntEnum):
     FLARE_KILLS = 18
     GUN_KILLS = 19
     UBERED_STREAK = 20
+    FLYING_STICKY = 21
+    BUBBLE_SHIELD = 22
+    NOSCOPE_KILLS = 23
 
     DEBUG = 69
 

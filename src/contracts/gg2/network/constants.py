@@ -1,7 +1,7 @@
 from enum import IntEnum
 from uuid import UUID
 
-MAGIC_HELLO = UUID("fe8300b349784a428e48b07c04934a18")
+MAGIC_HELLO = UUID("ca3db0d5429eb179b1cdb08af534787a")
 
 
 class RequestMessageHeader(IntEnum):
