@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from contracts.common.db.engine import on_startup
 from contracts.common.logging import logger
 from contracts.webapp.routes import index
-from contracts.webapp.routes.api import users
+from contracts.webapp.routes.api import me, users
 from contracts.webapp.settings import BASE_DIR
 
 
@@ -30,3 +30,4 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 app.include_router(index.router)
 app.include_router(users.router)
+app.include_router(me.router)

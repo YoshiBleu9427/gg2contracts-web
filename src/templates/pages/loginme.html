@@ -14,26 +14,9 @@
 <p>
     If you don't have one, sign up by playing on a server that runs the contracts plugin!
 </p>
-<h2></h2>
-<p>
-    Logged in as <b>{{ user.username }}</b>. (<a href="#">Log out NOT IMPLEMENTED YET</a>) <br/>
-    Canadium earned: <b>{{ user.points }}</b>
-</p>
 <h2 id="message"></h2>
 <form id="myform">
-    Username: <input name="username" placeholder="username" /> (this will not be displayed in-game and will help us find you to give out your rewards when the contest ends)<br/>
-    Mainclass: <select name="main_class">
-        <option value=0>RUNNER</option>
-        <option value=8>FIREBUG</option>
-        <option value=1>ROCKETMAN</option>
-        <option value=6>OVERWEIGHT</option>
-        <option value=3>DETONATOR</option>
-        <option value=4>HEALER</option>
-        <option value=5>CONSTRUCTOR</option>
-        <option value=2>RIFLEMAN</option>
-        <option value=7>INFILTRATOR</option>
-        <option value=9>QUOTE</option>
-    </select> (you will get more contracts for your chosen class) <br/>
+    Login key: <input id="userkey" name="key" placeholder="123456789012-1234-1234-1234-12345678" /> (find it in your gg2.ini after playing a game with contracts) <br/>
     <button type="submit">Submit</button>
 </form>
 {% endblock %}
@@ -41,25 +24,27 @@
 {% block extra_js %}
 <script>
     window.addEventListener("load", function () {
+        const givenKey = window.location.hash.substring(1);
+        document.getElementById("userkey").setAttribute("value", givenKey);
         document.getElementById("myform").addEventListener("submit", function (e) {
             e.preventDefault();
             const formData = new FormData(e.target);
 
-            if (formData.get("username").length < 2) {
-                document.getElementById("message").textContent = "Name too short"
+            const formKey = formData.get("key");
+            if (formKey.length < 16) {
+                document.getElementById("message").textContent = "Invalid key"
                 return;
             }
             
             document.getElementById("message").textContent = "Sending..."
-            fetch("/api/me", {
-                method: "put",
+            fetch("/api/me/login", {
+                method: "post",
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    "username": formData.get("username"),
-                    "main_class": formData.get("main_class"),
+                    "token": formData.get("key"),
                 })
             })
             .then( async (response) => {
@@ -70,10 +55,13 @@
             }).then( (response) => {
                 let respText;
                 if (response.status < 300) {
-                    respText = "Success!"
+                    respText = "Success! Loading...";
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000)
                 } else if (response.status < 500) {
                     const respJson = JSON.parse(response.content);
-                    respText = `Failure (${response.status}) ${respJson["detail"]}`
+                    respText = `Failure (${response.status}) ${JSON.stringify(respJson["detail"])}`
                 } else {
                     respText = `Failure (${response.status}) ${response.content}`
                 }

@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Request
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
 from sqlmodel import select
 
 from contracts.common.db.engine import SessionDep
 from contracts.common.models import User
+from contracts.webapp.security import get_current_user
 from contracts.webapp.settings import templates
 
 router = APIRouter()
@@ -25,7 +28,14 @@ def users_page(request: Request, session: SessionDep):
 
 
 @router.get("/me", response_class=HTMLResponse)
-def me_page(request: Request):
-    context = {"request": request}
-    response = templates.TemplateResponse("pages/updateme.html", context)
+def me_page(
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    if current_user:
+        context = {"request": request, "user": current_user}
+        response = templates.TemplateResponse("pages/updateme.html", context)
+    else:
+        context = {"request": request}
+        response = templates.TemplateResponse("pages/loginme.html", context)
     return response
