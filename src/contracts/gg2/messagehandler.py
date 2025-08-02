@@ -289,6 +289,10 @@ class MessageHandler(StreamRequestHandler):
             serialized_contract = outschemas.GG2OutContract.from_contract(contract)
             contract_bytes += serialized_contract.to_bytes()
 
+        contract_bytes += outschemas.GG2OutRewards(
+            rewards=found_user.rewards
+        ).to_bytes()
+
         self.expecting_data = False
         return write.uchar(ResponseMessageHeader.SUCCESS) + contract_bytes
 

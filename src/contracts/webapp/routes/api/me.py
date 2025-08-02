@@ -64,7 +64,7 @@ def login(schema: InLoginSchema, session: SessionDep) -> JSONResponse:
     response.set_cookie(
         COOKIE_NAME,
         value=current_user.key_token.hex,
-        max_age=3 * 60 * 60 * 1000,
+        max_age=24 * 60 * 60,
     )
 
     return response

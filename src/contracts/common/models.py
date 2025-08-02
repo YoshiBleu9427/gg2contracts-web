@@ -35,6 +35,31 @@ class GameServer(ContractBaseModel, table=True):
     )
 
 
+class UserRewardLink(ContractBaseModel, table=True):
+    user_identifier: UUID | None = Field(
+        default=None, foreign_key="user.identifier", primary_key=True
+    )
+    reward_identifier: UUID | None = Field(
+        default=None, foreign_key="reward.identifier", primary_key=True
+    )
+
+
+class Reward(ContractBaseModel, table=True):
+    identifier: UUID = Field(
+        default_factory=uuid4,
+        primary_key=True,
+        index=True,
+        nullable=False,
+    )
+    name: str
+    description: str
+    image_name: str | None
+    price: int = Field(default=0)
+    users: list["User"] = Relationship(
+        back_populates="rewards", link_model=UserRewardLink
+    )  # TODO probably dont need that one, study sqlmodel better
+
+
 class User(ContractBaseModel, table=True):
     identifier: UUID = Field(
         default_factory=uuid4,
@@ -56,6 +81,10 @@ class User(ContractBaseModel, table=True):
     main_class: GameClass
     contracts: list["Contract"] = Relationship(back_populates="user")
     points: int = Field(default=0)
+
+    rewards: list["Reward"] = Relationship(
+        back_populates="users", link_model=UserRewardLink
+    )
 
     last_joined_server: UUID | None = Field(
         default=None, foreign_key="gameserver.identifier", nullable=True
