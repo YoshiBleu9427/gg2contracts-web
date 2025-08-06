@@ -8,6 +8,7 @@ from contracts.common.db import queries
 from contracts.common.db.engine import get_session
 from contracts.common.logging import logger
 from contracts.common.models import Contract, GameServer, User
+from contracts.common.rewards import user_reward_names
 from contracts.common.settings import settings
 from contracts.gg2.network import read, write
 from contracts.gg2.network.constants import (
@@ -290,7 +291,7 @@ class MessageHandler(StreamRequestHandler):
             contract_bytes += serialized_contract.to_bytes()
 
         contract_bytes += outschemas.GG2OutRewards(
-            rewards=found_user.rewards
+            reward_names=user_reward_names(found_user)
         ).to_bytes()
 
         self.expecting_data = False

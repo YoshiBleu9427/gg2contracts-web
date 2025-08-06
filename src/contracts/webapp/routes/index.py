@@ -6,6 +6,7 @@ from sqlmodel import select
 
 from contracts.common.db.engine import SessionDep
 from contracts.common.models import User
+from contracts.common.rewards import ALL_REWARDS, user_reward_names
 from contracts.webapp.security import get_current_user
 from contracts.webapp.settings import templates
 
@@ -33,7 +34,12 @@ def me_page(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     if current_user:
-        context = {"request": request, "user": current_user}
+        context = {
+            "request": request,
+            "user": current_user,
+            "rewards": user_reward_names(current_user),
+            "all_rewards": ALL_REWARDS,
+        }
         response = templates.TemplateResponse("pages/updateme.html", context)
     else:
         context = {"request": request}

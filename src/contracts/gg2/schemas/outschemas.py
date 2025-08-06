@@ -5,16 +5,16 @@ from pydantic import BaseModel
 from pydantic.fields import Field
 
 from contracts.common.enums import ContractType, GameClass
-from contracts.common.models import Contract, Reward
+from contracts.common.models import Contract
 from contracts.gg2.network import write
 from contracts.gg2.schemas.base import GG2Serializable
 
 
 class GG2OutRewards(BaseModel, GG2Serializable):
-    rewards: list[Reward]
+    reward_names: list[str]
 
     def to_bytes(self) -> bytes:
-        return write.long_string(":".join([r.name for r in self.rewards]))
+        return write.long_string(":".join(self.reward_names))
 
 
 class GG2OutContract(BaseModel, GG2Serializable):

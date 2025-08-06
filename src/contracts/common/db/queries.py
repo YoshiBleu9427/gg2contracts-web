@@ -3,7 +3,7 @@ from uuid import UUID
 
 from sqlmodel import Session, col, desc, func, select
 
-from contracts.common.models import Contract, GameServer, Reward, User
+from contracts.common.models import Contract, GameServer, User
 
 
 def get_users(
@@ -116,27 +116,3 @@ def get_contracts_count(
         query = query.where(Contract.completed == by__completed)
 
     return session.exec(query).one()
-
-
-def get_rewards(
-    session: Session,
-    by__name: str | None = None,
-) -> Sequence[Reward]:
-    query = select(Reward)
-
-    if by__name:
-        query = query.where(Reward.name == by__name)
-
-    return session.exec(query).all()
-
-
-def get_reward(
-    session: Session,
-    by__identifier: UUID | None = None,
-) -> Reward | None:
-    query = select(Reward)
-
-    if by__identifier:
-        query = query.where(Reward.identifier == by__identifier)
-
-    return session.exec(query).one_or_none()

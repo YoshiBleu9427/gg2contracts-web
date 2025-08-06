@@ -55,10 +55,7 @@
             }).then( (response) => {
                 let respText;
                 if (response.status < 300) {
-                    respText = "Success! Loading...";
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000)
+                    window.location.reload();
                 } else if (response.status < 500) {
                     const respJson = JSON.parse(response.content);
                     respText = `Failure (${response.status}) ${JSON.stringify(respJson["detail"])}`
