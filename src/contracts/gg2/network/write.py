@@ -20,11 +20,11 @@ def uuid(value: UUID) -> bytes:
 
 def short_string(value: str) -> bytes:
     encoded = value.encode("utf-8")
-    assert len(encoded) < 2 ^ 8
+    assert len(encoded) < (2**8)
     return uchar(len(encoded)) + encoded
 
 
 def long_string(value: str) -> bytes:
     encoded = value.encode("utf-8")
-    assert len(encoded) < 2 ^ 16
+    assert len(encoded) < (2**16)
     return ushort(len(encoded)) + encoded
