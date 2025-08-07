@@ -19,21 +19,43 @@
     Logged in as <b>{{ user.username }}</b>. (<a href="#">Log out NOT IMPLEMENTED YET</a>) <br/>
     Canadium earned: <b>{{ user.points }}</b>
 </p>
-<h2 id="message"></h2>
+<h2></h2>
 <form id="myform">
-    Username: <input name="username" placeholder="username" /> (this will not be displayed in-game and will help us find you to give out your rewards when the contest ends)<br/>
+    Username: <input name="username" placeholder="username" /><br/>
     Mainclass: <select name="main_class">
-        <option value=0>RUNNER</option>
-        <option value=8>FIREBUG</option>
-        <option value=1>ROCKETMAN</option>
-        <option value=6>OVERWEIGHT</option>
-        <option value=3>DETONATOR</option>
-        <option value=4>HEALER</option>
-        <option value=5>CONSTRUCTOR</option>
-        <option value=2>RIFLEMAN</option>
-        <option value=7>INFILTRATOR</option>
-        <option value=9>QUOTE</option>
+        <option value=0 {{ 'selected' if user.main_class == 0 }}>RUNNER</option>
+        <option value=8 {{ 'selected' if user.main_class == 8 }}>FIREBUG</option>
+        <option value=1 {{ 'selected' if user.main_class == 1 }}>ROCKETMAN</option>
+        <option value=6 {{ 'selected' if user.main_class == 6 }}>OVERWEIGHT</option>
+        <option value=3 {{ 'selected' if user.main_class == 3 }}>DETONATOR</option>
+        <option value=4 {{ 'selected' if user.main_class == 4 }}>HEALER</option>
+        <option value=5 {{ 'selected' if user.main_class == 5 }}>CONSTRUCTOR</option>
+        <option value=2 {{ 'selected' if user.main_class == 2 }}>RIFLEMAN</option>
+        <option value=7 {{ 'selected' if user.main_class == 7 }}>INFILTRATOR</option>
+        <option value=9 {{ 'selected' if user.main_class == 9 }}>QUOTE</option>
     </select> (you will get more contracts for your chosen class) <br/>
+
+    Rewards:<br/>
+    <table>
+        <tr>
+            <th>Select</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Preview</th>
+        </tr>
+        {% for item in all_rewards %}
+        {% if item.price <= user.points %}
+        <tr>
+            <td><input type="checkbox" name="rewards" value="{{item.name}}" {{ 'checked' if item.name in rewards }}/></td>
+            <td>{{ item.description }}</td>
+            <td>{{ item.price }}</td>
+            <td><img src={{ url_for('static', path='assets/rewards/'+item.image_name+'.png') }} alt="{{item.image_name}}" /></td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </table>
+    
+    <h2 id="message"></h2>
     <button type="submit">Submit</button>
 </form>
 {% endblock %}
@@ -45,9 +67,19 @@
             e.preventDefault();
             const formData = new FormData(e.target);
 
-            if (formData.get("username").length < 2) {
-                document.getElementById("message").textContent = "Name too short"
+            const payload = {
+                "main_class": formData.get("main_class"),
+                "reward_names": formData.getAll("rewards"),
+            }
+
+            const nbMedals = payload.reward_names.filter((value) => value.startsWith("Cnt_medal_")).length;
+            if (nbMedals > 2) {
+                document.getElementById("message").textContent = "Please only select 2 medals at most";
                 return;
+            }
+
+            if (formData.get("username").length > 1) {
+                payload["username"] = formData.get("username");
             }
             
             document.getElementById("message").textContent = "Sending..."
@@ -57,10 +89,7 @@
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    "username": formData.get("username"),
-                    "main_class": formData.get("main_class"),
-                })
+                body: JSON.stringify(payload)
             })
             .then( async (response) => {
                 return {

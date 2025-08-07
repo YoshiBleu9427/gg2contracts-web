@@ -10,6 +10,13 @@ from contracts.gg2.network import write
 from contracts.gg2.schemas.base import GG2Serializable
 
 
+class GG2OutRewards(BaseModel, GG2Serializable):
+    reward_names: list[str]
+
+    def to_bytes(self) -> bytes:
+        return write.long_string(":".join(self.reward_names))
+
+
 class GG2OutContract(BaseModel, GG2Serializable):
     identifier: UUID
     contract_type: ContractType

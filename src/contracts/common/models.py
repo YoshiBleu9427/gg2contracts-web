@@ -1,9 +1,18 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlmodel import TIMESTAMP, Field, Relationship, SQLModel
+from pydantic import BaseModel
+from pydantic.fields import Field as PydanticField
+from sqlmodel import JSON, TIMESTAMP, Column, Field, Relationship, SQLModel
 
 from contracts.common.enums import ContractType, GameClass
+
+
+class Reward(BaseModel):
+    name: str
+    description: str
+    image_name: str | None
+    price: int = PydanticField(default=0)
 
 
 class ContractBaseModel(SQLModel):
@@ -56,6 +65,8 @@ class User(ContractBaseModel, table=True):
     main_class: GameClass
     contracts: list["Contract"] = Relationship(back_populates="user")
     points: int = Field(default=0)
+
+    reward_indices: list[int] | None = Field(sa_column=Column(JSON))
 
     last_joined_server: UUID | None = Field(
         default=None, foreign_key="gameserver.identifier", nullable=True

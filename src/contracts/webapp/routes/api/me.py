@@ -10,6 +10,12 @@ from pydantic import BaseModel
 from contracts.common.db.engine import SessionDep
 from contracts.common.enums import GameClass
 from contracts.common.models import Contract, User
+from contracts.common.rewards import (
+    InsufficientFunds,
+    TooManyMedals,
+    grant_from_names,
+    user_reward_names,
+)
 from contracts.webapp.security import get_current_user, validate_userkey
 
 router = APIRouter(prefix="/api/me", tags=["Users"])
@@ -24,8 +30,9 @@ class InLoginSchema(BaseModel):
 
 
 class InUserSchema(BaseModel):
-    username: str | None
+    username: str | None = None
     main_class: GameClass
+    reward_names: list[str] | None = None
 
 
 class OutUserSchema(BaseModel):
@@ -33,6 +40,7 @@ class OutUserSchema(BaseModel):
     username: str
     main_class: str
     contracts: list[Contract]
+    reward_names: list[str]
 
 
 @router.get("/")
@@ -46,6 +54,7 @@ async def read_users_me(current_user: Annotated[User, Depends(get_current_user)]
         username=current_user.username,
         main_class=current_user.main_class.name,
         contracts=current_user.contracts,
+        reward_names=user_reward_names(current_user),
     )
 
 
@@ -64,7 +73,7 @@ def login(schema: InLoginSchema, session: SessionDep) -> JSONResponse:
     response.set_cookie(
         COOKIE_NAME,
         value=current_user.key_token.hex,
-        max_age=3 * 60 * 60 * 1000,
+        max_age=24 * 60 * 60,
     )
 
     return response
@@ -82,6 +91,14 @@ def update_user(
 
     current_user.main_class = schema.main_class
 
+    if schema.reward_names:
+        try:
+            grant_from_names(current_user, schema.reward_names)
+        except TooManyMedals:
+            raise HTTPException(status_code=422, detail="Too many medals selected")
+        except InsufficientFunds:
+            raise HTTPException(status_code=422, detail="Rewards too expensive")
+
     session.commit()
 
     return OutUserSchema(
@@ -89,4 +106,5 @@ def update_user(
         username=current_user.username,
         main_class=current_user.main_class.name,
         contracts=[],
+        reward_names=user_reward_names(current_user),
     )
