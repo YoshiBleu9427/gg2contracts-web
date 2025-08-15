@@ -5,8 +5,9 @@ from fastapi.staticfiles import StaticFiles
 
 from contracts.common.db.engine import on_startup
 from contracts.common.logging import logger
-from contracts.webapp.routes import index
-from contracts.webapp.routes.api import me, users
+from contracts.webapp.routes import index, me
+from contracts.webapp.routes.api import me as api_me
+from contracts.webapp.routes.api import users as api_users
 from contracts.webapp.settings import BASE_DIR
 
 
@@ -22,12 +23,13 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="The gg2 contracts website",
     description="Gang Garrison 2 Contracts Website and Backend",
-    version="0.1.2",
+    version="0.3.1",
     lifespan=lifespan,
 )
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 app.include_router(index.router)
-app.include_router(users.router)
 app.include_router(me.router)
+app.include_router(api_users.router)
+app.include_router(api_me.router)

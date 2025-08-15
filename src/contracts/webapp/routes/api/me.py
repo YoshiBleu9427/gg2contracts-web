@@ -16,7 +16,8 @@ from contracts.common.rewards import (
     grant_from_names,
     user_reward_names,
 )
-from contracts.webapp.security import get_current_user, validate_userkey
+from contracts.webapp.security.base import get_current_user
+from contracts.webapp.security.cookie import set_cookie, validate_userkey
 
 router = APIRouter(prefix="/api/me", tags=["Users"])
 
@@ -43,8 +44,9 @@ class OutUserSchema(BaseModel):
     reward_names: list[str]
 
 
+@router.get("")
 @router.get("/")
-async def read_users_me(current_user: Annotated[User, Depends(get_current_user)]):
+async def get_user_me(current_user: Annotated[User, Depends(get_current_user)]):
     time.sleep(0.5)  # totally super secure B)
     if not current_user:
         raise HTTPException(status_code=403)
@@ -66,19 +68,12 @@ def login(schema: InLoginSchema, session: SessionDep) -> JSONResponse:
     if not current_user:
         raise HTTPException(status_code=403)
 
-    session.commit()
-
-    response = JSONResponse(None)
-
-    response.set_cookie(
-        COOKIE_NAME,
-        value=current_user.key_token.hex,
-        max_age=24 * 60 * 60,
-    )
-
-    return response
+    resp = JSONResponse(None)
+    set_cookie(current_user, resp)
+    return resp
 
 
+@router.put("")
 @router.put("/")
 def update_user(
     schema: InUserSchema,

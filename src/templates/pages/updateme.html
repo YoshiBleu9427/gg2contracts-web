@@ -6,22 +6,56 @@
 
 {% block content %}
 <h1>Update your profile</h1>
-<p>
-    Update your profile using your user key. <br/>
-    You can find your contracts user key in your <code>gg2.ini</code> .<br/>
-    If you reached this page through the plugin menu in game, your user key is already filled in!
-</p>
-<p>
-    If you don't have one, sign up by playing on a server that runs the contracts plugin!
-</p>
 <h2></h2>
 <p>
-    Logged in as <b>{{ user.username }}</b>. (<a href="#">Log out NOT IMPLEMENTED YET</a>) <br/>
+    Logged in as <b>{{ user.username }}</b>. (<a href="/me/logout">Log out</a>) <br/>
     Canadium earned: <b>{{ user.points }}</b>
+    <details>
+        <summary>User key</summary>
+        <blockquote>
+            <code class="highlighted">{{ user.key_token }}</code>
+            <br/>
+            <br/>
+            This key goes into your gg2.ini. Don't share it with anyone!
+        </blockquote>
+    </details>
+    <br/>
+
+    <details>
+        <summary>Linked discord account
+            {% if user.discord_username == None %}
+            ❌
+            {% else %}
+            ✅
+            {% endif %}
+            </a>
+        </summary>
+        <blockquote>
+            <code>{{ user.discord_username }}</code>
+            <br/>
+            <br/>
+            {% if discord_oauth_login_url %}
+                <a href="{{ discord_oauth_login_url }}">
+                {% if user.discord_username == None %}
+                    <button>Link Discord Account <img width="12" src="{{ url_for('static', path='assets/discord.png') }}" /></button>
+                {% else %}
+                    <button>Link another Discord Account <img width="12" src="{{ url_for('static', path='assets/discord.png') }}" /></button>
+                {% endif %}
+                </a>
+                <br/>
+            {% endif %}
+            Linking your discord account to your contracts account allows you to
+            {% if discord_oauth_login_url %}
+                log into this website with discord, and
+            {% endif %}
+            use discord slash commands.
+        </blockquote>
+    </details>
+    <br/>
 </p>
 <h2></h2>
 <form id="myform">
-    Username: <input name="username" placeholder="username" /><br/>
+    New username: <input name="username" placeholder="username" /><br/>
     Mainclass: <select name="main_class">
         <option value=0 {{ 'selected' if user.main_class == 0 }}>RUNNER</option>
         <option value=8 {{ 'selected' if user.main_class == 8 }}>FIREBUG</option>
@@ -36,6 +70,7 @@
     </select> (you will get more contracts for your chosen class) <br/>
 
     Rewards:<br/>
+    {% if user.points >= 100 %}
     <table>
         <tr>
             <th>Select</th>
@@ -54,10 +89,25 @@
         {% endif %}
         {% endfor %}
     </table>
+    {% else %}
+    You haven't earned enough Canadium to unlock rewards yet. Try getting at least 100!
+    {% endif %}
     
     <h2 id="message"></h2>
     <button type="submit">Submit</button>
 </form>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    code.highlighted {
+        background: #ffeff0;
+        word-wrap: break-word;
+        box-decoration-break: clone;
+        padding: .1rem .3rem .2rem;
+        border-radius: .2rem;
+    }
+</style>
 {% endblock %}
 
 {% block extra_js %}

@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends
+from fastapi import Depends, Response
 from fastapi.security import APIKeyCookie
 from pydantic import BaseModel
 
@@ -28,7 +28,19 @@ def validate_userkey(session: SessionDep, user_key: str | None) -> User | None:
         return None
 
 
-async def get_current_user(
+def set_cookie(user: User, response: Response):
+    response.set_cookie(
+        COOKIE_NAME,
+        value=user.key_token.hex,
+        max_age=24 * 60 * 60,
+    )
+
+
+def unset_cookie(response: Response):
+    response.delete_cookie(COOKIE_NAME)
+
+
+async def get_cookie_user(
     session: SessionDep, user_key: Annotated[str | None, Depends(user_key_cookie)]
 ) -> User | None:
     return validate_userkey(session, user_key)

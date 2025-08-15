@@ -10,6 +10,10 @@ class Settings(BaseSettings):
     discord_prefix: str = "gg2"
     discord_test_guild: int | None = None
 
+    discord_oauth_client_id: str = ""
+    discord_oauth_client_secret: str = ""
+    discord_oauth_redirect_uri: str = "http://localhost/me"
+
     gg2_host: str = "0.0.0.0"
     gg2_port: int = 51061
     gg2_timeout: float = 3.0
