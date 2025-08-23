@@ -65,6 +65,7 @@
             }).then( (response) => {
                 let respText;
                 if (response.status < 300) {
+                    e.target.reset();
                     window.location.reload();
                 } else if (response.status < 500) {
                     const respJson = JSON.parse(response.content);

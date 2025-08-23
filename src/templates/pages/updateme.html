@@ -55,7 +55,7 @@
 </p>
 <h2></h2>
 <form id="myform">
-    New username: <input name="username" placeholder="username" /><br/>
+    New username: <input name="username" placeholder="{{ user.username }}" /><br/>
     Mainclass: <select name="main_class">
         <option value=0 {{ 'selected' if user.main_class == 0 }}>RUNNER</option>
         <option value=8 {{ 'selected' if user.main_class == 8 }}>FIREBUG</option>
