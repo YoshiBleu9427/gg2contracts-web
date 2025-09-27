@@ -1,5 +1,5 @@
 from .all_rewards import ALL_REWARDS
-from .modelization import user_reward_names
+from .modelization import user_next_milestone, user_reward_names
 from .validation import InsufficientFunds, TooManyMedals, grant_from_names
 
 __all__ = (
@@ -8,4 +8,5 @@ __all__ = (
     "InsufficientFunds",
     "TooManyMedals",
     "user_reward_names",
+    "user_next_milestone",
 )

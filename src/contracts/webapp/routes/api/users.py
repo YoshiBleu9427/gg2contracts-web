@@ -6,7 +6,6 @@ from pydantic import BaseModel
 from contracts.common.db import queries
 from contracts.common.db.engine import SessionDep
 from contracts.common.enums import GameClass
-from contracts.common.models import Contract
 from contracts.common.rewards import user_reward_names
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
@@ -22,7 +21,6 @@ class OutUserSchema(BaseModel):
     identifier: UUID
     username: str
     main_class: str
-    contracts: list[Contract]
     reward_names: list[str]
 
 
@@ -35,7 +33,6 @@ def get_users(session: SessionDep):
             identifier=user.identifier,
             username=user.username,
             main_class=user.main_class.name,
-            contracts=user.contracts,
             reward_names=user_reward_names(user),
         )
         for user in db_users
@@ -57,6 +54,23 @@ def get_user(session: SessionDep, identifier: str):
         identifier=user.identifier,
         username=user.username,
         main_class=user.main_class.name,
-        contracts=user.contracts,
         reward_names=user_reward_names(user),
     )
+
+
+@router.get("/{identifier}/contracts")
+def get_user_contracts(session: SessionDep, identifier: str):
+    try:
+        user_uuid = UUID(identifier)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Bad identifier")
+
+    contracts = queries.get_contracts(
+        session,
+        by__user_identifier=user_uuid,
+        order_by__created_at=True,
+        order_by__completed=True,
+        limit=100,
+    )
+
+    return contracts

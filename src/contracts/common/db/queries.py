@@ -1,7 +1,7 @@
 from typing import Sequence
 from uuid import UUID
 
-from sqlmodel import Session, col, desc, func, select
+from sqlmodel import Session, asc, col, desc, func, select
 
 from contracts.common.models import Contract, GameServer, User
 
@@ -90,14 +90,26 @@ def get_contracts(
     session: Session,
     by__user_identifier: UUID | None = None,
     by__completed: bool | None = None,
+    limit: int | None = None,
+    order_by__completed: bool | None = None,
+    order_by__created_at: bool | None = None,
 ) -> Sequence[Contract]:
     query = select(Contract)
+
+    if order_by__completed:
+        query = query.order_by(asc(Contract.completed))
+
+    if order_by__created_at:
+        query = query.order_by(desc(Contract.created_at))
 
     if by__user_identifier:
         query = query.where(Contract.user_identifier == by__user_identifier)
 
     if by__completed is not None:
         query = query.where(Contract.completed == by__completed)
+
+    if limit:
+        query = query.limit(limit)
 
     return session.exec(query).all()
 

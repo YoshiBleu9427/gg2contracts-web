@@ -9,7 +9,8 @@
 <div style="display: flex;">
     <div>
         Users
-        <table>
+        <input type="text" id="usernameFilter" onkeyup="filterUsersByName()" placeholder="Search for names..">
+        <table id="usersTable">
             <thead>
                 <th>Name</th>
                 <th>Class</th>
@@ -120,7 +121,7 @@
     }
     const showContracts = (target) => {
         const userId = target.getAttribute("data-user-id");
-        fetch(`/api/users/${userId}`, {
+        fetch(`/api/users/${userId}/contracts`, {
             method: "get",
             headers: {
                 'Accept': 'application/json',
@@ -128,18 +129,34 @@
             }
         }).then(async (response) => {
             const resp = await response.json();
-            console.log(resp);
 
             const contractsBody = document.getElementById("contractsBody");
             while (contractsBody.firstChild) {
                 contractsBody.firstChild.remove();
             }
 
-            resp.contracts.forEach(contract => {
+            resp.forEach(contract => {
                 contractsBody.appendChild(contractToLine(contract));
             });
         })
     }
+    const filterUsersByName = () => {
+        const filterValue = document.getElementById("usernameFilter").value.toUpperCase();
+        const rows = document.getElementById("usersTable").getElementsByTagName("tr");
+
+        // Loop through all table rows, and hide those who don't match the search query
+        for (let i = 0; i < rows.length; i++) {
+            const td = rows[i].getElementsByTagName("td")[0];
+            if (td) {
+                const username = td.textContent;
+                if (username.toUpperCase().indexOf(filterValue) > -1) {
+                    rows[i].style.display = "";
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
+        }
+    };
     window.addEventListener("load", () => {
         const collection = document.getElementsByClassName("usermainclass");
         for (let i = 0; i < collection.length; i++) {

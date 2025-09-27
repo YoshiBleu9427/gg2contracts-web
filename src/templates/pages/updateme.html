@@ -90,7 +90,12 @@
         {% endfor %}
     </table>
     {% else %}
-    You haven't earned enough Canadium to unlock rewards yet. Try getting at least 100!
+    You haven't earned enough Canadium to unlock rewards yet.
+    {% endif %}
+    {% if next_milestone %}
+    Unlock your next reward at {{ next_milestone }} Canadium!
+    {% else %}
+    You have unlocked all rewards!
     {% endif %}
     
     <h2 id="message"></h2>

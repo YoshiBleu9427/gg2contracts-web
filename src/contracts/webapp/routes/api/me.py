@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from contracts.common.db.engine import SessionDep
 from contracts.common.enums import GameClass
-from contracts.common.models import Contract, User
+from contracts.common.models import User
 from contracts.common.rewards import (
     InsufficientFunds,
     TooManyMedals,
@@ -40,7 +40,6 @@ class OutUserSchema(BaseModel):
     identifier: UUID
     username: str
     main_class: str
-    contracts: list[Contract]
     reward_names: list[str]
 
 
@@ -55,7 +54,6 @@ async def get_user_me(current_user: Annotated[User, Depends(get_current_user)]):
         identifier=current_user.identifier,
         username=current_user.username,
         main_class=current_user.main_class.name,
-        contracts=current_user.contracts,
         reward_names=user_reward_names(current_user),
     )
 
@@ -100,6 +98,5 @@ def update_user(
         identifier=current_user.identifier,
         username=current_user.username,
         main_class=current_user.main_class.name,
-        contracts=[],
         reward_names=user_reward_names(current_user),
     )

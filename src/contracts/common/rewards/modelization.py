@@ -26,3 +26,12 @@ def user_reward_names(user: User) -> list[str]:
         for index in user.reward_indices
         if index < len(ALL_REWARDS)
     ]
+
+
+def user_next_milestone(user: User) -> int | None:
+    prices_set = {r.price for r in ALL_REWARDS}
+    prices_ordered = sorted(prices_set)
+    prices_filtered = [p for p in prices_ordered if p > user.points]
+    if len(prices_filtered) < 1:
+        return None
+    return prices_filtered[0]
